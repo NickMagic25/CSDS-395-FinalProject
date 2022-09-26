@@ -1,6 +1,7 @@
 import mysql.connector
 import random
 import datetime
+import numpy as np
 
 
 # connects to the AWS mysql server
@@ -88,10 +89,10 @@ def add_workout_data(cursor, user_arr, stop):
     print("Adding workout data...")
     workout_arr = []
     for x in range(0, stop):
-        workout_id = str(x)
+        workout_id = "workout" + str(x)
         try:
             cursor.execute("INSERT INTO workout (workout_id, name, creator_user_name, description) VALUES "
-                           "('%s', '%s', '%s', '%s')" % (workout_id, "workout " + str(x),
+                           "('%s', '%s', '%s', '%s')" % (workout_id, "new workout",
                                                          user_arr[random.randint(0, len(user_arr) - 1)], 'lift'))
             workout_arr.append(workout_id)
         except Exception as e:
@@ -134,7 +135,7 @@ def add_program_data(cursor, user_arr, stop):
     print("Adding program data...")
     program_arr = []
     for x in range(0, stop):
-        program_id = str(x)
+        program_id = "program" + str(x)
         user_name = user_arr[random.randint(0, len(user_arr) - 1)]
         try:
             cursor.execute("INSERT INTO program (program_id, program_name, program_creator, description, length) "
@@ -349,8 +350,8 @@ def add_post_comments(cursor, post_arr, user_arr, stop):
     comment_arr = []
     now = datetime.datetime.now()
     for x in range(0, stop):
-        post_id = post_arr[random.randint(0, len(post_arr)-1)]
-        username = user_arr[random.randint(0, len(user_arr)-1)]
+        post_id = post_arr[random.randint(0, len(post_arr) - 1)]
+        username = user_arr[random.randint(0, len(user_arr) - 1)]
         comment_id = "comment" + str(x)
         try:
             cursor.execute("INSERT INTO post_comment (comment_id, post_id, user_name, message, created_at) VALUES "
@@ -375,8 +376,8 @@ def add_post_likes(cursor, post_arr, user_arr, stop):
     post_likes_arr = []
     now = datetime.datetime.now()
     for x in range(0, stop):
-        post_id = post_arr[random.randint(0, len(post_arr)-1)]
-        username = user_arr[random.randint(0, len(user_arr)-1)]
+        post_id = post_arr[random.randint(0, len(post_arr) - 1)]
+        username = user_arr[random.randint(0, len(user_arr) - 1)]
         try:
             cursor.execute("INSERT INTO post_like (post_id, user_name, like_time) VALUES ('%s', '%s', '%s')"
                            % (post_id, username, now))
@@ -424,10 +425,10 @@ def add_user_follows(cursor, user_arr, stop):
     user_follow_arr = []
     now = datetime.datetime.now()
     for x in range(0, stop):
-        sender = user_arr[random.randint(0, len(user_arr)-1)]
+        sender = user_arr[random.randint(0, len(user_arr) - 1)]
         receiver = None
         while sender != receiver:
-            receiver = user_arr[random.randint(0, len(user_arr)-1)]
+            receiver = user_arr[random.randint(0, len(user_arr) - 1)]
         try:
             cursor.execute("INSERT INTO user_follow (source_user, target_user, follow_time, approved) VALUES "
                            "('%s', '%s', '%s', '%s')" % (sender, receiver, now, '1'))
@@ -450,7 +451,7 @@ def add_message_groups(cursor, user_arr, stop):
     message_group_arr = []
     now = datetime.datetime.now()
     for x in range(0, stop):
-        username = user_arr[random.randint(0, len(user_arr)-1)]
+        username = user_arr[random.randint(0, len(user_arr) - 1)]
         group_id = "group" + str(x)
         try:
             cursor.execute("INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES "
@@ -478,7 +479,7 @@ def add_messages(cursor, message_group_members_arr, stop):
     now = datetime.datetime.now()
     try:
         for x in range(0, stop):
-            username = message_group_members_arr[random.randint(0, len(message_group_members_arr)-1)]
+            username = message_group_members_arr[random.randint(0, len(message_group_members_arr) - 1)]
             cursor.execute("Select group_id FROM message_group_member WHERE user_name = '%s' " % username)
             for result in cursor:
                 group_id = result[0]
@@ -509,8 +510,8 @@ def add_message_group_members(cursor, user_arr, message_group_arr, stop):
         for result in cursor:
             message_group_members_arr.append(result[0])
         for x in range(0, stop):
-            username = user_arr[random.randint(0, len(user_arr)-1)]
-            group_id = message_group_arr[random.randint(0, len(message_group_arr)-1)]
+            username = user_arr[random.randint(0, len(user_arr) - 1)]
+            group_id = message_group_arr[random.randint(0, len(message_group_arr) - 1)]
             cursor.execute("INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES "
                            "('%s', '%s', '%s', '%s')" % (group_id, username, now, '0'))
             message_group_members_arr.append(username)
@@ -529,26 +530,43 @@ def define(cursor, item):
 
 
 def add_data(cursor, stop):
+    dictionary = {}
     move_arr = add_move_data(cursor, stop)
+    dictionary.update({'move names': np.array(move_arr)})
     user_arr = add_user_data(cursor, stop)
+    dictionary.update({'usernames':np.array(user_arr)})
     workout_arr = add_workout_data(cursor, user_arr, stop)
-    workout_meta_arr = add_workout_meta(cursor, workout_arr, stop)
+    dictionary.update({'workout ids':np.array(workout_arr)})
+    dictionary.update({"workout meta ids": np.array(add_workout_meta(cursor, workout_arr, stop))})
     program_arr = add_program_data(cursor, user_arr, stop)
-    program_meta_arr = add_program_meta(cursor, program_arr, stop)
-    move_meta_arr = add_move_meta(cursor, move_arr, stop)
-    set_arr = add_set_data(cursor, move_arr, workout_arr, stop)
-    completed_move_arr = add_completed_move_data(cursor, move_arr, user_arr, stop)
-    program_contains_arr = add_program_contains_data(cursor, program_arr, workout_arr, stop)
-    completed_program_arr = add_completing_program(cursor, program_arr, user_arr, stop)
+    dictionary.update({"Program IDs": np.array(program_arr)})
+    dictionary.update({"program meta ids": np.array(add_program_meta(cursor, program_arr, stop))})
+    dictionary.update({"move meta names": np.array(add_move_meta(cursor, move_arr, stop))})
+    dictionary.update({"Set workout ids": np.array(add_set_data(cursor, move_arr, workout_arr, stop))})
+    dictionary.update({"completed move username": np.array(add_completed_move_data(cursor, move_arr, user_arr, stop))})
+    dictionary.update({"program contains ids": np.array(add_program_contains_data(cursor, program_arr, workout_arr, stop))})
+    dictionary.update({"Completed program usernames":np.array(add_completing_program(cursor, program_arr, user_arr, stop)) })
     post_arr = add_user_post_data(cursor, user_arr, stop)
-    post_meta_arr = add_post_meta(cursor, post_arr, stop)
+    dictionary.update({"post ids": np.array(post_arr)})
+    dictionary.update({"post metadata ids": np.array(add_post_meta(cursor, post_arr, stop))})
     comment_arr = add_post_comments(cursor, post_arr, user_arr, stop)
-    post_likes_arr = add_post_likes(cursor, post_arr, user_arr, stop)
-    comment_likes_arr = add_comment_likes(cursor, comment_arr, user_arr, stop)
-    user_follow_arr = add_user_follows(cursor, user_arr, stop)
+    dictionary.update({"Comment IDs": np.array(comment_arr)})
+    dictionary.update({"Post like IDs": np.array(add_post_likes(cursor, post_arr, user_arr, stop))})
+    dictionary.update({"Comment like IDs": np.array(add_comment_likes(cursor, comment_arr, user_arr, stop))})
+    dictionary.update({"User follows IDs": np.array(add_user_follows(cursor, user_arr, stop))})
     message_group_arr = add_message_groups(cursor, user_arr, stop)
+    dictionary.update({"Message group IDs": np.array(message_group_arr)})
     message_group_members_arr = add_message_group_members(cursor, user_arr, message_group_arr, stop)
-    messages_arr = add_messages(cursor, message_group_members_arr, stop)
+    dictionary.update({"Message group member usernames": np.array(message_group_members_arr)})
+    dictionary.update({"Groups with messages IDs": np.array(add_messages(cursor, message_group_members_arr, stop))})
+    result_file = open("results.txt", 'w+')
+    for key in dictionary:
+        result_file.write(key + ":\n")
+        for item in dictionary.get(key):
+            result_file.write(item + "\n")
+        result_file.write("\n")
+    result_file.close()
+    print("Result file available!")
 
 
 def main():
@@ -563,12 +581,13 @@ def main():
         )
         print('successfully connected to insta-jacked \n')
         cursor = db.cursor(buffered=True)
-        add_data(cursor, 10)
-        # db.commit()
+        add_data(cursor, 100)
+        print("committing to database...")
+        db.commit()
+        print("committed!")
         print('connection terminated')
     except Exception as e:
         print(e)
-        # main()
 
 
 main()
