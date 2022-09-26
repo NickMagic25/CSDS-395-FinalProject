@@ -349,8 +349,8 @@ def add_post_comments(cursor, post_arr, user_arr, stop):
     comment_arr = []
     now = datetime.datetime.now()
     for x in range(0, stop):
-        post_id = post_arr[random.randint(0, len(post_arr))]
-        username = user_arr[random.randint(0, len(user_arr))]
+        post_id = post_arr[random.randint(0, len(post_arr)-1)]
+        username = user_arr[random.randint(0, len(user_arr)-1)]
         comment_id = "comment" + str(x)
         try:
             cursor.execute("INSERT INTO post_comment (comment_id, post_id, user_name, message, created_at) VALUES "
@@ -378,7 +378,7 @@ def add_post_likes(cursor, post_arr, user_arr, stop):
         post_id = post_arr[random.randint(0, len(post_arr)-1)]
         username = user_arr[random.randint(0, len(user_arr)-1)]
         try:
-            cursor.execute("INSERT INT post_like (post_id, user_name, like_time) VALUES ('%s', '%s', '%s')"
+            cursor.execute("INSERT INTO post_like (post_id, user_name, like_time) VALUES ('%s', '%s', '%s')"
                            % (post_id, username, now))
             post_likes_arr.append(post_id)
         except Exception as e:
@@ -403,7 +403,7 @@ def add_comment_likes(cursor, comment_arr, user_arr, stop):
         comment_id = comment_arr[random.randint(0, len(comment_arr) - 1)]
         username = user_arr[random.randint(0, len(user_arr) - 1)]
         try:
-            cursor.execute("INSERT INT comment_like (comment_id, user_name, like_time) VALUES ('%s', '%s', '%s')"
+            cursor.execute("INSERT INTO comment_like (comment_id, user_name, like_time) VALUES ('%s', '%s', '%s')"
                            % (comment_id, username, now))
             comment_likes_arr.append(comment_id)
         except Exception as e:
@@ -481,11 +481,10 @@ def add_messages(cursor, message_group_members_arr, stop):
             username = message_group_members_arr[random.randint(0, len(message_group_members_arr)-1)]
             cursor.execute("Select group_id FROM message_group_member WHERE user_name = '%s' " % username)
             for result in cursor:
-                if result.with_rows:
-                    group_id = result.fetchall()
-                    cursor.execute("INSERT INTO message (group_id, content, sender, send_time) VALUES "
-                                   "('%s', \"%s\", '%s', '%s')" % (group_id, 'message in a bottle', username, now))
-                    message_group_messages_arr.append(group_id)
+                group_id = result[0]
+                cursor.execute("INSERT INTO message (group_id, content, sender, send_time) VALUES "
+                               "('%s', \"%s\", '%s', '%s')" % (group_id, 'message in a bottle', username, now))
+                message_group_messages_arr.append(group_id)
     except Exception as e:
         print(e)
         print("Something went wrong\n")
@@ -508,18 +507,18 @@ def add_message_group_members(cursor, user_arr, message_group_arr, stop):
         # get existing message group members from group creation
         cursor.execute("SELECT user_name FROM message_group_member")
         for result in cursor:
-            if result.with_rows:
-                message_group_members_arr.append(result.fetchall())
+            message_group_members_arr.append(result[0])
         for x in range(0, stop):
             username = user_arr[random.randint(0, len(user_arr)-1)]
-            group_id = message_group_arr[random.randint(0, len(message_group_arr) -1)]
+            group_id = message_group_arr[random.randint(0, len(message_group_arr)-1)]
             cursor.execute("INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES "
                            "('%s', '%s', '%s', '%s')" % (group_id, username, now, '0'))
             message_group_members_arr.append(username)
     except Exception as e:
         print(e)
-        print("Something went wrong")
+        print("Something went wrong \n")
         return message_group_members_arr
+    print("Message group members added! \n")
     return message_group_members_arr
 
 
@@ -563,8 +562,8 @@ def main():
             database='insta-jacked'
         )
         print('successfully connected to insta-jacked \n')
-        cursor = db.cursor()
-        add_data(cursor, 2)
+        cursor = db.cursor(buffered=True)
+        add_data(cursor, 10)
         # db.commit()
         print('connection terminated')
     except Exception as e:
