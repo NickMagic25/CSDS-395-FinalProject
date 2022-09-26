@@ -374,7 +374,7 @@ def add_post_likes(cursor, post_arr, user_arr, stop):
     print("Adding post likes...")
     post_likes_arr = []
     now = datetime.datetime.now()
-    for x in range(0,stop):
+    for x in range(0, stop):
         post_id = post_arr[random.randint(0, len(post_arr)-1)]
         username = user_arr[random.randint(0, len(user_arr)-1)]
         try:
@@ -425,8 +425,8 @@ def add_user_follows(cursor, user_arr, stop):
     now = datetime.datetime.now()
     for x in range(0, stop):
         sender = user_arr[random.randint(0, len(user_arr)-1)]
-        receiver= None
-        while(sender !=receiver):
+        receiver = None
+        while sender != receiver:
             receiver = user_arr[random.randint(0, len(user_arr)-1)]
         try:
             cursor.execute("INSERT INTO user_follow (source_user, target_user, follow_time, approved) VALUES "
@@ -440,16 +440,87 @@ def add_user_follows(cursor, user_arr, stop):
     return user_follow_arr
 
 
+# creates message groups and adds them to the database
+# cursor: from database connection
+# user_arr: array of Usernames to use
+# stop: number of groups to make
+# return: array of message group IDs
 def add_message_groups(cursor, user_arr, stop):
-    return
+    print("Adding message groups...")
+    message_group_arr = []
+    now = datetime.datetime.now()
+    for x in range(0, stop):
+        username = user_arr[random.randint(0, len(user_arr)-1)]
+        group_id = "group" + str(x)
+        try:
+            cursor.execute("INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES "
+                           "('%s', '%s', '%s', '%s')" % (group_id, group_id, username, now))
+            # add the creator to the group with an admin level of 3
+            cursor.execute("INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES "
+                           "('%s', '%s', '%s', '%s')" % (group_id, username, now, '3'))
+            message_group_arr.append(group_id)
+        except Exception as e:
+            print(e)
+            print("Something went wrong\n")
+            return message_group_arr
+    print("Message groups added!\n")
+    return message_group_arr
 
 
-def add_messages(cursor, message_group_arr, stop):
-    return
+# creates messages sent to message groups that users are a part of
+# cursor: from database connection
+# message_group_members_arr: array of message group members
+# stop: number of messages to create
+# return: array of all group IDs with messages
+def add_messages(cursor, message_group_members_arr, stop):
+    print("Adding messages...")
+    message_group_messages_arr = []
+    now = datetime.datetime.now()
+    try:
+        for x in range(0, stop):
+            username = message_group_members_arr[random.randint(0, len(message_group_members_arr)-1)]
+            cursor.execute("Select group_id FROM message_group_member WHERE user_name = '%s' " % username)
+            for result in cursor:
+                if result.with_rows:
+                    group_id = result.fetchall()
+                    cursor.execute("INSERT INTO message (group_id, content, sender, send_time) VALUES "
+                                   "('%s', \"%s\", '%s', '%s')" % (group_id, 'message in a bottle', username, now))
+                    message_group_messages_arr.append(group_id)
+    except Exception as e:
+        print(e)
+        print("Something went wrong\n")
+        return message_group_messages_arr
+    print("Messages added!\n")
+    return message_group_messages_arr
 
 
-def add_message_group_members(cursor, user, arr, message_group_arr, stop):
-    return
+# creates message group members
+# cursor: from database connection
+# user_arr: array of added usernames
+# message_group_arr: array of message groups created
+# stop: number of group members to create
+# return: array of usernames in message groups
+def add_message_group_members(cursor, user_arr, message_group_arr, stop):
+    print("Adding message group members...")
+    message_group_members_arr = []
+    now = datetime.datetime.now()
+    try:
+        # get existing message group members from group creation
+        cursor.execute("SELECT user_name FROM message_group_member")
+        for result in cursor:
+            if result.with_rows:
+                message_group_members_arr.append(result.fetchall())
+        for x in range(0, stop):
+            username = user_arr[random.randint(0, len(user_arr)-1)]
+            group_id = message_group_arr[random.randint(0, len(message_group_arr) -1)]
+            cursor.execute("INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES "
+                           "('%s', '%s', '%s', '%s')" % (group_id, username, now, '0'))
+            message_group_members_arr.append(username)
+    except Exception as e:
+        print(e)
+        print("Something went wrong")
+        return message_group_members_arr
+    return message_group_members_arr
 
 
 def define(cursor, item):
@@ -478,7 +549,7 @@ def add_data(cursor, stop):
     user_follow_arr = add_user_follows(cursor, user_arr, stop)
     message_group_arr = add_message_groups(cursor, user_arr, stop)
     message_group_members_arr = add_message_group_members(cursor, user_arr, message_group_arr, stop)
-    messages_arr = add_messages(cursor, message_group_arr, stop)
+    messages_arr = add_messages(cursor, message_group_members_arr, stop)
 
 
 def main():
