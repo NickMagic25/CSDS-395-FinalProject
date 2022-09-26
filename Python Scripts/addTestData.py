@@ -49,7 +49,7 @@ def add_move_data(cursor, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return move_arr
     print("Move data added!\n")
     return move_arr
 
@@ -74,7 +74,7 @@ def add_user_data(cursor, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return user_arr
     print("User data added!\n")
     return user_arr
 
@@ -97,7 +97,7 @@ def add_workout_data(cursor, user_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return workout_arr
     print("Workout data added!\n")
     return workout_arr
 
@@ -120,7 +120,7 @@ def add_workout_meta(cursor, workout_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return workout_meta_arr
     print("Workout metadata added!\n")
     return workout_meta_arr
 
@@ -144,7 +144,7 @@ def add_program_data(cursor, user_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return program_arr
     print("Program data added!\n")
     return program_arr
 
@@ -166,7 +166,7 @@ def add_program_meta(cursor, program_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return program_meta_arr
     print("Program metadata added!\n")
     return program_meta_arr
 
@@ -188,7 +188,7 @@ def add_move_meta(cursor, move_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return move_meta_arr
     print("Move metadata added!\n")
     return move_meta_arr
 
@@ -212,7 +212,7 @@ def add_set_data(cursor, move_arr, workout_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong")
-            return
+            return set_arr
     print("Set data added!\n")
     return set_arr
 
@@ -238,7 +238,7 @@ def add_completed_move_data(cursor, move_arr, user_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return completed_move_arr
     print("Completed move data added!\n")
     return completed_move_arr
 
@@ -253,8 +253,8 @@ def add_program_contains_data(cursor, program_arr, workout_arr, stop):
     print("Adding program contains data...")
     program_contains_arr = []
     for x in range(0, stop):
-        program_id = program_arr[random.randint(0,len(program_arr)-1)]
-        workout_id = workout_arr[random.randint(0, len(workout_arr)-1)]
+        program_id = program_arr[random.randint(0, len(program_arr) - 1)]
+        workout_id = workout_arr[random.randint(0, len(workout_arr) - 1)]
         try:
             cursor.execute("INSERT INTO program_contains (program_id, workout_id, day_of) VALUES ('%s', '%s', '%s')"
                            % (program_id, workout_id, '-1'))
@@ -262,7 +262,7 @@ def add_program_contains_data(cursor, program_arr, workout_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return program_contains_arr
     print("Program contains data added!\n")
     return program_contains_arr
 
@@ -277,9 +277,9 @@ def add_completing_program(cursor, program_arr, user_arr, stop):
     print("Adding completed program data...")
     completing_program_arr = []
     now = datetime.datetime.now()
-    for x in range(0 , stop):
-        program_id = program_arr[random.randint(0, len(program_arr)-1)]
-        username = user_arr[random.randint(0, len(user_arr)-1)]
+    for x in range(0, stop):
+        program_id = program_arr[random.randint(0, len(program_arr) - 1)]
+        username = user_arr[random.randint(0, len(user_arr) - 1)]
         try:
             cursor.execute("INSERT INTO completing_program (program_id, user_name, date_started, day_of_program, "
                            "completed) VALUES ('%s', '%s', %s, %s, '%s')" % (program_id, username, '-1', '-1', now))
@@ -287,7 +287,7 @@ def add_completing_program(cursor, program_arr, user_arr, stop):
         except Exception as e:
             print(e)
             print("Something went wrong\n")
-            return
+            return completing_program_arr
     print("Completing program Data added!\n")
     return completing_program_arr
 
@@ -302,45 +302,149 @@ def add_user_post_data(cursor, user_arr, stop):
     post_arr = []
     now = datetime.datetime.now()
     for x in range(0, stop):
-        username = user_arr[random.randint(0, len(user_arr)-1)]
+        username = user_arr[random.randint(0, len(user_arr) - 1)]
         post_id = "post" + str(x)
         try:
-            cursor.execute("INSERT INTO completing_program (post_id, user_name, message, created_at) VALUES "
+            cursor.execute("INSERT user_post (post_id, user_name, message, created_at) VALUES "
                            "('%s', '%s', \"%sS\", '%s')" % (post_id, username, "This is a message", now))
             post_arr.append(post_id)
         except Exception as e:
             print(e)
             print("Something went wrong \n")
-            return
+            return post_arr
     print("Successfully added post data! \n")
     return post_arr
 
 
+# generates user post metadata
+# cursor: from database connection
+# post_arr: array of post IDs
+# stop: number of posts to generate metadata for
+# return: array of post IDs that have metadata
 def add_post_meta(cursor, post_arr, stop):
-    return
+    print("Adding move post metadata...")
+    post_meta_arr = []
+    for x in range(0, stop):
+        post_id = post_arr[random.randint(0, len(post_arr) - 1)]
+        try:
+            cursor.execute("INSERT INTO post_meta (post_id, `key`, content) VALUES ('%s', '%s', \"%s\")" %
+                           (post_id, 'some key', 'some content'))
+            post_meta_arr.append(post_id)
+        except Exception as e:
+            print(e)
+            print("Something went wrong\n")
+            return post_meta_arr
+    print("Move metadata added!\n")
+    return post_meta_arr
 
 
+# generates comments to a users post
+# cursor: from database connection
+# post_arr: array of post IDs added to the database
+# user_arr: array of usernames added to the database
+# stop: number of comments to generate
+# return: array of comment IDs add to the database
 def add_post_comments(cursor, post_arr, user_arr, stop):
-    return
+    print("Adding post comments data...")
+    comment_arr = []
+    now = datetime.datetime.now()
+    for x in range(0, stop):
+        post_id = post_arr[random.randint(0, len(post_arr))]
+        username = user_arr[random.randint(0, len(user_arr))]
+        comment_id = "comment" + str(x)
+        try:
+            cursor.execute("INSERT INTO post_comment (comment_id, post_id, user_name, message, created_at) VALUES "
+                           "('%s', '%s', '%s', \"%s\", '%s')" % (comment_id, post_id, username, "comment", now))
+            comment_arr.append(comment_id)
+        except Exception as e:
+            print(e)
+            print("Something went wrong\n")
+            return comment_arr
+    print("Post comments successfully added\n")
+    return comment_arr
 
 
+# adds likes to user posts
+# cursor: from database connection
+# post_arr: array of post IDs added to the database
+# user_arr: array of usernames added to the database
+# stop: number of likes to generate
+# return: array of post IDs with likes on them
 def add_post_likes(cursor, post_arr, user_arr, stop):
-    return
+    print("Adding post likes...")
+    post_likes_arr = []
+    now = datetime.datetime.now()
+    for x in range(0,stop):
+        post_id = post_arr[random.randint(0, len(post_arr)-1)]
+        username = user_arr[random.randint(0, len(user_arr)-1)]
+        try:
+            cursor.execute("INSERT INT post_like (post_id, user_name, like_time) VALUES ('%s', '%s', '%s')"
+                           % (post_id, username, now))
+            post_likes_arr.append(post_id)
+        except Exception as e:
+            print(e)
+            print("Something went wrong\n")
+            return post_likes_arr
+    print("Post likes added!\n")
+    return post_likes_arr
 
 
+# add likes to post comments
+# cursor: from database connection
+# comment_arr: array of comment IDs added
+# user_arr: array of usernames added
+# stop: number of comments to like
+# return: array of comment IDs with likes
 def add_comment_likes(cursor, comment_arr, user_arr, stop):
-    return
+    print("Adding comment likes...")
+    comment_likes_arr = []
+    now = datetime.datetime.now()
+    for x in range(0, stop):
+        comment_id = comment_arr[random.randint(0, len(comment_arr) - 1)]
+        username = user_arr[random.randint(0, len(user_arr) - 1)]
+        try:
+            cursor.execute("INSERT INT comment_like (comment_id, user_name, like_time) VALUES ('%s', '%s', '%s')"
+                           % (comment_id, username, now))
+            comment_likes_arr.append(comment_id)
+        except Exception as e:
+            print(e)
+            print("Something went wrong\n")
+            return comment_likes_arr
+    print("comment likes added!\n")
+    return comment_likes_arr
 
 
+# Generates user follows data
+# cursor: from database connection
+# user_arr: array of usernames added
+# stop: number of users that will be followed
+# return: array of users that have sent follow requests
 def add_user_follows(cursor, user_arr, stop):
-    return
+    print("Adding user follows data...")
+    user_follow_arr = []
+    now = datetime.datetime.now()
+    for x in range(0, stop):
+        sender = user_arr[random.randint(0, len(user_arr)-1)]
+        receiver= None
+        while(sender !=receiver):
+            receiver = user_arr[random.randint(0, len(user_arr)-1)]
+        try:
+            cursor.execute("INSERT INTO user_follow (source_user, target_user, follow_time, approved) VALUES "
+                           "('%s', '%s', '%s', '%s')" % (sender, receiver, now), '1')
+            user_follow_arr.append(sender)
+        except Exception as e:
+            print(e)
+            print("Something went wrong\n")
+            return user_follow_arr
+    print("Added user follows data!\n")
+    return user_follow_arr
 
 
 def add_message_groups(cursor, user_arr, stop):
     return
 
 
-def add_messages(cursor, user_arr, message_group_arr, stop):
+def add_messages(cursor, message_group_arr, stop):
     return
 
 
@@ -367,6 +471,15 @@ def add_data(cursor, stop):
     program_contains_arr = add_program_contains_data(cursor, program_arr, workout_arr, stop)
     completed_program_arr = add_completing_program(cursor, program_arr, user_arr, stop)
     post_arr = add_user_post_data(cursor, user_arr, stop)
+    post_meta_arr = add_post_meta(cursor, post_arr, stop)
+    comment_arr = add_post_comments(cursor, post_arr, user_arr, stop)
+    post_likes_arr = add_post_likes(cursor, post_arr, user_arr, stop)
+    comment_likes_arr = add_comment_likes(cursor, comment_arr, user_arr, stop)
+    user_follow_arr = add_user_follows(cursor, user_arr, stop)
+    message_group_arr = add_message_groups(cursor, user_arr, stop)
+    message_group_members_arr = add_message_group_members(cursor, user_arr, message_group_arr, stop)
+    messages_arr = add_messages(cursor, message_group_arr, stop)
+
 
 def main():
     uname = input('username: ')
