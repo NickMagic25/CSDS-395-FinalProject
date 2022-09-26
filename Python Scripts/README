@@ -1,0 +1,4 @@
+In order to run, Python3 is required
+
+In addition, you will need to install the Python mysql connector.
+This can be installed by running 'pip install mysql-connector-python' in the command line.
