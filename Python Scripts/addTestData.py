@@ -430,7 +430,7 @@ def add_user_follows(cursor, user_arr, stop):
             receiver = user_arr[random.randint(0, len(user_arr)-1)]
         try:
             cursor.execute("INSERT INTO user_follow (source_user, target_user, follow_time, approved) VALUES "
-                           "('%s', '%s', '%s', '%s')" % (sender, receiver, now), '1')
+                           "('%s', '%s', '%s', '%s')" % (sender, receiver, now, '1'))
             user_follow_arr.append(sender)
         except Exception as e:
             print(e)
