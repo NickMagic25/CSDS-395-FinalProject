@@ -426,8 +426,8 @@ def add_user_follows(cursor, user_arr, stop):
     now = datetime.datetime.now()
     for x in range(0, stop):
         sender = user_arr[random.randint(0, len(user_arr) - 1)]
-        receiver = None
-        while sender != receiver:
+        receiver = receiver = user_arr[random.randint(0, len(user_arr) - 1)]
+        while sender == receiver:
             receiver = user_arr[random.randint(0, len(user_arr) - 1)]
         try:
             cursor.execute("INSERT INTO user_follow (source_user, target_user, follow_time, approved) VALUES "
@@ -581,7 +581,11 @@ def main():
         )
         print('successfully connected to insta-jacked \n')
         cursor = db.cursor(buffered=True)
-        add_data(cursor, 100)
+        # add_data(cursor, 100)
+        user_arr = []
+        for i in range(0,100):
+            user_arr.append("user" + str(i))
+        add_user_follows(cursor, user_arr, 100)
         print("committing to database...")
         db.commit()
         print("committed!")
