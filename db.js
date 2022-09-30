@@ -25,6 +25,7 @@ function hashPassword(password){
     return password;
 }
 
+// login to a user
 app.get("/login", (req, res) =>{
     // hard code information in for now
     `const username = req.body.username;
@@ -46,6 +47,7 @@ app.get("/login", (req, res) =>{
     })
 })
 
+// create an account
 app.get("/createaccount", (req, res) => {
     // hard coding in a user
     `const username = reg.body.username;
@@ -73,5 +75,5 @@ app.get("/createaccount", (req, res) => {
         console.log(result);
         res.send("Added user")
     })
-
 })
+
