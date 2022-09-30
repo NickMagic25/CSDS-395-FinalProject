@@ -20,20 +20,58 @@ const db = mysql.createConnection({
     database: "insta-jacked"
 })
 
-app.get("/login", (reg, res) =>{
+// to do: find a hashing algorithm for the password
+function hashPassword(password){
+    return password;
+}
+
+app.get("/login", (req, res) =>{
     // hard code information in for now
-    `const username = reg.body.username;
-    const email = reg.body.username;
-    const number  = reg.body.username;
-    const password = reg.body.password;`
-    const username = "user0"
-    const email = "0@gmail.com"
-    const number = "0"
-    const password = "secure password"
+    `const username = req.body.username;
+    const email = req.body.username;
+    const number  = req.body.username;
+    let password = req.body.password;`
+    const username = 'user999';
+    const email = 'testemail@email.com';
+    const number  = '999';
+    let password = 'secure password';
+
+    password = hashPassword(password);
     const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + email + "' or mobile_number "+
         "= '" + number + "') AND hashed_password = '" + password + "'";
     db.query(sql, function(err, result){
         if (err) throw err;
         console.log(result);
         res.send("Found user0")
-})});
+    })
+})
+
+app.get("/createaccount", (req, res) => {
+    // hard coding in a user
+    `const username = reg.body.username;
+    const email = reg.body.email;
+    const number  = reg.body.number;
+    let password = reg.body.password;
+    const firstName = req.body.firstName;
+    const lastName= req.body.lastName;`
+
+    const username = 'user999';
+    const email = 'testemail@email.com';
+    const number  = '999';
+    let password = 'secure password';
+    const firstName = 'test';
+    const lastName= 'user';
+
+    const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    password = hashPassword(password);
+    const sql = "INSERT INTO user (user_name, first_name, last_name, mobile_number, email, hashed_password, " +
+        "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + number + "','"
+        + email + "','" + password + "','" + creationDate + "','" + creationDate + "', NULL)";
+    db.query(sql, function(err, result){
+        if (err) throw err;
+        console.log(result);
+        res.send("Added user")
+    })
+
+})
