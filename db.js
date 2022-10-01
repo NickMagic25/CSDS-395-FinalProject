@@ -201,5 +201,68 @@ app.get("/programs/search", (req,res) => {
         res.send("creators: " + programCreators + " IDs: " + programIDs + " | names: " + programNames +
             " | lengths" + programLengths);
     })
+})
 
+// finds all moves in a workout and workout metadata
+// use workout10 as example
+app.get("/workouts/moves/:workoutID", (req, res) => {
+    const workoutID = req.params["workoutID"];
+
+    const setSQL = "SELECT s.* FROM workout as w, `set` as s WHERE w.workout_id = '" + workoutID
+        + "' AND s.workout_id = '" + workoutID + "'";
+    db.query(setSQL, (err, result) => {
+        if(err) throw err;
+        let moveNames = [];
+        let workoutmeta=[]
+        for (let i =0; i<result.length; i ++){
+            let moveName = result[i]['move_name'];
+            moveNames.push(moveName);
+        }
+        const metaSQL = "SELECT * FROM workout_meta WHERE workout_id = '" + workoutID + "'";
+        db.query(metaSQL, (err1, result1) => {
+            if (err1) throw err1;
+            for (let i=0; i<result1.length; i++){
+                let meta = result1[i];
+                let all = [meta['key'], meta['content']];
+                workoutmeta.push(all);
+            }
+            console.log("Names", moveNames);
+            console.log("Workout meta", workoutmeta)
+            res.send("Names: " + moveNames + " | workout meta " + workoutmeta);
+        })
+    })
+})
+
+// finds all workouts in a program and program metadata
+// program0 as test
+app.get("/programs/workouts/:programID", (req, res) => {
+    const programID = req.params["programID"];
+
+    const programSQL = "SELECT c.workout_id, w.name FROM program_contains as c, workout as w WHERE program_id = '"
+        + programID +"' AND w.workout_id = c.workout_id";
+    db.query(programSQL, (err, result) => {
+        if(err) throw err;
+        let workoutIDs = [];
+        let names = [];
+        let programMeta=[];
+        for (let i =0; i<result.length; i++){
+            let workoutID = result[i]['workout_id'];
+            let name = result[i]['name'];
+            workoutIDs.push(workoutID);
+            names.push(name);
+        }
+        const metaSQL = "SELECT * FROM program_meta WHERE program_id = '" + programID +"'";
+        db.query(metaSQL, (err1, result1) => {
+            if (err1) throw err1;
+            for (let i=0; i<result1.length; i++){
+                let meta = result1[i];
+                let all = [meta['key'], meta['content']];
+                programMeta.push(all);
+            }
+            console.log("WorkoutIds", workoutIDs)
+            console.log("Names", names);
+            console.log("Program meta", programMeta);
+            res.send("Names: " + names + " | workout IDs: " + workoutIDs + " | Program metadata: " + programMeta);
+        })
+    })
 })
