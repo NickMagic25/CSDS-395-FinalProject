@@ -131,7 +131,7 @@ app.get("/user/interactions/:userName", (req, res) => {
 })
 
 
-// searchs a username from either a name or creator username
+// searches a username from either a name or creator username
 app.get("/workouts/search", (req,res) => {
     // commenting out to hard code in a name
     `const search = req.body.searchBar;`
@@ -160,6 +160,46 @@ app.get("/workouts/search", (req,res) => {
         res.send("Found workouts " + workoutNames + " || Found IDs " + workoutIDs + " || Creators " + creators);
 
 
+    })
+
+})
+
+// searches programs to find a program that meets the user's requirements
+app.get("/programs/search", (req,res) => {
+    // hard coding in example for now
+    `// default length to 0
+    const length = req.body.numDays;
+    // either >, <, or blank string; allows for user to search for program of certain length or greater/lesser length
+    const comparer = req.body.comparer;
+    // search can be the name of the program or the creator
+    const search = req.body.searchBar;`
+
+    const length = "60";
+    const comparer = ">"
+    const search = "some name";
+
+    console.log("Searching for a program of length " + length + " with name " + search);
+    const sql = "SELECT * FROM program WHERE (program_name = '" + search + "' OR program_creator = '" + search +
+        "') AND length " + comparer + "= " + length;
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        let programIDs = [];
+        let programNames = [];
+        let programCreators = [];
+        let programLengths = [];
+        for (let i = 0; i<result.length; i++){
+            let program=result[i];
+            programIDs.push(program["program_id"]);
+            programNames.push(program["program_name"]);
+            programCreators.push(program["program_creator"]);
+            programLengths.push(program["length"]);
+        }
+        console.log("creators", programCreators);
+        console.log("IDs", programIDs);
+        console.log("names", programNames);
+        console.log("lengths", programLengths);
+        res.send("creators: " + programCreators + " IDs: " + programIDs + " | names: " + programNames +
+            " | lengths" + programLengths);
     })
 
 })
