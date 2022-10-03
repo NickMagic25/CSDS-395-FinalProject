@@ -10,7 +10,8 @@ const app = express();
 app.use(express.json());
 
 app.listen('3000', () => {
-    console.log("Server started on port 3000!")
+    console.log("Server started on port 3000!");
+    console.log("Go to localhost:3000 to start");
 });
 
 const db = mysql.createConnection({
@@ -289,7 +290,7 @@ app.get("/programs/workouts/:programID", (req, res) => {
 // makes a new workout with x number of moves
 app.get("/workouts/create", (req, res) =>{
     // function to make a workout, will be recursively called if a duplicate ID is used
-    function makeWorkout(req, res){
+    function makeWorkout(){
         `// name of the workout
     const workoutName = req.body.workoutName;
     // list of move names
@@ -315,7 +316,7 @@ app.get("/workouts/create", (req, res) =>{
                 if (err.errno === 1062){
                     console.log("Duplicate entry");
                     // run again with same base params, workoutID will be randomly generated
-                    makeWorkout(req, res);
+                    makeWorkout();
                 }
                 else throw err;
             }
@@ -334,5 +335,35 @@ app.get("/workouts/create", (req, res) =>{
         }
         res.send("Added workout with ID:" + workoutID + " and name " + workoutName);
     }
-    makeWorkout(req, res);
+    makeWorkout();
+})
+
+app.get("/programs/create", (req, res) =>{
+    function makeProgram(){
+        `const programName = req.body.name;
+        const creator = req.body.username;
+        const description = req.body.description;
+    `
+
+        //hard coding for testing
+        const programName = "program 3000";
+        const creator = "user99"
+        const description = "some description"
+
+        const programID = makeid(20);
+        const sql = "INSERT INTO program (program_id, program_name, program_creator, description) VALUES ('"
+            + programID + "', '" + programName + "', '" + creator + "', '"+ description + "')"
+        db.query(sql, (err, result) =>{
+            if(err){
+                if (err.errno === 1062){
+                    console.log("Duplicate entry, rerunn with new programID")
+                    makeProgram();
+                }
+                else throw err;
+            }
+            console.log(result);
+            res.send("Successfully made program with ID: " + programID + " and name: " + programName)
+        })
+    }
+    makeProgram()
 })
