@@ -26,6 +26,18 @@ function hashPassword(password){
     return password;
 }
 
+// from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
+}
+
 // login to a user
 app.get("/login", (req, res) =>{
     // hard code information in for now
@@ -72,7 +84,14 @@ app.get("/createaccount", (req, res) => {
         "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + number + "','"
         + email + "','" + password + "','" + creationDate + "','" + creationDate + "', NULL)";
     db.query(sql, function(err, result){
-        if (err) throw err;
+        if (err){
+            // handle duplicate names;
+            if (err.errno == 1062){
+                console.log("Duplicate entry");
+                res.send("Username email or password already in use")
+            }
+            else throw err;
+        }
         console.log(result);
         res.send("Added user")
     })
@@ -265,4 +284,55 @@ app.get("/programs/workouts/:programID", (req, res) => {
             res.send("Names: " + names + " | workout IDs: " + workoutIDs + " | Program metadata: " + programMeta);
         })
     })
+})
+
+function makeWorkout(req, res){
+    `// name of the workout
+    const workoutName = req.body.workoutName;
+    // list of move names
+    const moves = req.body.moves;
+    const username = req.body.username
+    `
+
+    // hard code in workout name and moves for now
+    const workoutName = "Some name";
+    // moves in format name, rep count, repetition. set num is the place in array
+    const moves= [["move1", -1,-1], ["move2",-1,-1], ["move3",-1,-1]];
+    const username = "user0"
+
+    //randomly generate workoutID
+    const workoutID= makeid(20);
+    console.log("workout name:",workoutName)
+    console.log("workout ID", workoutID)
+    const sql = "INSERT INTO workout (workout_id, name, creator_user_name) VALUES ('" + workoutID + "', ' "
+        + workoutName + "', '" + username + "')"
+    db.query(sql, (err, result) => {
+        if (err){
+            // handle duplicate names;
+            if (err.errno === 1062){
+                console.log("Duplicate entry");
+                // run again with same base params, workoutID will be randomly generated
+                makeWorkout(req, res);
+            }
+            else throw err;
+        }
+    })
+    for(let i=0; i<moves.length;i++){
+        let set = moves[i];
+        let name = set[0];
+        let repCount= set[1];
+        let repetition = set[2];
+        let moveSQL = "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num) VALUES ('"
+            + workoutID + "', '" + name+ "'," + repCount + "," + repetition + "," + i + ")";
+        db.query(moveSQL, (err, result) =>{
+            if (err) throw err;
+            console.log(result);
+        })
+    }
+    res.send("Added workout with ID:" + workoutID + " and name " + workoutName);
+}
+
+// makes a new workout with x number of moves
+app.get("/workouts/create", (req, res) =>{
+    makeWorkout(req, res);
 })
