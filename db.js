@@ -286,53 +286,53 @@ app.get("/programs/workouts/:programID", (req, res) => {
     })
 })
 
-function makeWorkout(req, res){
-    `// name of the workout
+// makes a new workout with x number of moves
+app.get("/workouts/create", (req, res) =>{
+    // function to make a workout, will be recursively called if a duplicate ID is used
+    function makeWorkout(req, res){
+        `// name of the workout
     const workoutName = req.body.workoutName;
     // list of move names
     const moves = req.body.moves;
     const username = req.body.username
     `
 
-    // hard code in workout name and moves for now
-    const workoutName = "Some name";
-    // moves in format name, rep count, repetition. set num is the place in array
-    const moves= [["move1", -1,-1], ["move2",-1,-1], ["move3",-1,-1]];
-    const username = "user0"
+        // hard code in workout name and moves for now
+        const workoutName = "Some name";
+        // moves in format name, rep count, repetition. set num is the place in array
+        const moves= [["move1", -1,-1], ["move2",-1,-1], ["move3",-1,-1]];
+        const username = "user0"
 
-    //randomly generate workoutID
-    const workoutID= makeid(20);
-    console.log("workout name:",workoutName)
-    console.log("workout ID", workoutID)
-    const sql = "INSERT INTO workout (workout_id, name, creator_user_name) VALUES ('" + workoutID + "', ' "
-        + workoutName + "', '" + username + "')"
-    db.query(sql, (err, result) => {
-        if (err){
-            // handle duplicate names;
-            if (err.errno === 1062){
-                console.log("Duplicate entry");
-                // run again with same base params, workoutID will be randomly generated
-                makeWorkout(req, res);
+        //randomly generate workoutID
+        const workoutID= makeid(20);
+        console.log("workout name:",workoutName)
+        console.log("workout ID", workoutID)
+        const sql = "INSERT INTO workout (workout_id, name, creator_user_name) VALUES ('" + workoutID + "', ' "
+            + workoutName + "', '" + username + "')"
+        db.query(sql, (err, result) => {
+            if (err){
+                // handle duplicate names;
+                if (err.errno === 1062){
+                    console.log("Duplicate entry");
+                    // run again with same base params, workoutID will be randomly generated
+                    makeWorkout(req, res);
+                }
+                else throw err;
             }
-            else throw err;
-        }
-    })
-    for(let i=0; i<moves.length;i++){
-        let set = moves[i];
-        let name = set[0];
-        let repCount= set[1];
-        let repetition = set[2];
-        let moveSQL = "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num) VALUES ('"
-            + workoutID + "', '" + name+ "'," + repCount + "," + repetition + "," + i + ")";
-        db.query(moveSQL, (err, result) =>{
-            if (err) throw err;
-            console.log(result);
         })
+        for(let i=0; i<moves.length;i++){
+            let set = moves[i];
+            let name = set[0];
+            let repCount= set[1];
+            let repetition = set[2];
+            let moveSQL = "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num) VALUES ('"
+                + workoutID + "', '" + name+ "'," + repCount + "," + repetition + "," + i + ")";
+            db.query(moveSQL, (err, result) =>{
+                if (err) throw err;
+                console.log(result);
+            })
+        }
+        res.send("Added workout with ID:" + workoutID + " and name " + workoutName);
     }
-    res.send("Added workout with ID:" + workoutID + " and name " + workoutName);
-}
-
-// makes a new workout with x number of moves
-app.get("/workouts/create", (req, res) =>{
     makeWorkout(req, res);
 })
