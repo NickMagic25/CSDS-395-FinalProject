@@ -46,18 +46,28 @@ app.get("/login", (req, res) =>{
     const email = req.body.username;
     const number  = req.body.username;
     let password = req.body.password;`
+
+
     const username = 'user999';
     const email = 'testemail@email.com';
     const number  = '999';
     let password = 'secure password';
 
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     password = hashPassword(password);
     const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + email + "' or mobile_number "+
         "= '" + number + "') AND hashed_password = '" + password + "'";
+    const updateLastLoginSQL = "UPDATE user SET last_online = '" + now  + "' WHERE user_name = '" + username + "'";
     db.query(sql, function(err, result){
         if (err) throw err;
-        console.log(result);
-        res.send("Found user0")
+        db.query(updateLastLoginSQL, (err1, result1) =>{
+            if(err1) throw err1;
+            console.log(result1);
+            console.log("updated last online")
+            console.log(result);
+            res.send("Found user0")
+        })
     })
 })
 
@@ -87,7 +97,7 @@ app.get("/createaccount", (req, res) => {
     db.query(sql, function(err, result){
         if (err){
             // handle duplicate names;
-            if (err.errno == 1062){
+            if (err.errno === 1062){
                 console.log("Duplicate entry");
                 res.send("Username email or password already in use")
             }
@@ -339,24 +349,24 @@ app.get("/workouts/create", (req, res) =>{
 })
 
 app.get("/programs/create", (req, res) =>{
-    function makeProgram(){
-        `const programName = req.body.name;
+    `const programName = req.body.name;
         const creator = req.body.username;
         const description = req.body.description;
     `
 
-        //hard coding for testing
-        const programName = "program 3000";
-        const creator = "user99"
-        const description = "some description"
+    //hard coding for testing
+    const programName = "program 3000";
+    const creator = "user99"
+    const description = "some description"
 
+    function makeProgram(){
         const programID = makeid(20);
         const sql = "INSERT INTO program (program_id, program_name, program_creator, description) VALUES ('"
             + programID + "', '" + programName + "', '" + creator + "', '"+ description + "')"
         db.query(sql, (err, result) =>{
             if(err){
                 if (err.errno === 1062){
-                    console.log("Duplicate entry, rerunn with new programID")
+                    console.log("Duplicate entry, rerun with new programID")
                     makeProgram();
                 }
                 else throw err;
@@ -366,4 +376,68 @@ app.get("/programs/create", (req, res) =>{
         })
     }
     makeProgram()
+})
+
+app.get("/messages/creategroup", (req, res) =>{
+    `const username = req.body.username;
+    const name = req.body.name;`
+
+    // hardcode in name for now
+    const name= 'some group';
+    const username = 'user99';
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    function makeMessageGroup(){
+        const id = makeid(20)
+        const sql = "INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES ('" + id + "', '"
+            + name + "', '" + username + "', '" + now + "')"
+        const adminSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES " +
+            "('" + id + "', '" + username + "', '" + now + "', 3)";
+        db.query(sql, (err, result) =>{
+            if(err){
+                if (err.errno === 1062){
+                    console.log("Duplicate entry, rerun with new groupID")
+                    makeMessageGroup();
+                }
+                else throw err;
+            }
+            db.query(adminSQL, (err1, result1)=>{
+                if (err1) throw err1;
+                console.log(result, result1);
+                res.send("New group with ID" + id + " created");
+                }
+            )
+        })
+    }
+    makeMessageGroup();
+})
+
+app.get("/messages/:groupID", (req,res) =>{
+    const groupID = req.params['groupID'];
+
+    `const username = req.body.username`
+
+    //hard code username for now
+    const username = 'user99';
+
+    const membersSQl="SELECT user_name FROM message_group_member WHERE group_ID = '" + groupID + "'";
+    const messageSQL = "SELECT content, sender, send_time FROM message WHERE group_id = '" + groupID + "' AND '"
+        + username + "' in (" + membersSQl + ")";
+    db.query(messageSQL, (err, result) =>{
+        if(err) throw err;
+        if(result[0] === undefined)
+            res.send("Group does not exists or not a member of group");
+        let content ="";
+        for(let i=0; i<result.length; i++){
+            let message = result[i];
+            console.log(message)
+            // divider for formatting
+            if(i !== 0)
+                content += "\n<br/>\n"
+            content += message['sender'] + " at " + message['send_time'] + ": " + message['content'];
+        }
+        console.log(content);
+        res.send(content);
+    })
 })
