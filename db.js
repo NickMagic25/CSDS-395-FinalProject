@@ -378,6 +378,7 @@ app.get("/programs/create", (req, res) =>{
     makeProgram()
 })
 
+// creates a message group from a given name and creator username
 app.get("/messages/creategroup", (req, res) =>{
     `const username = req.body.username;
     const name = req.body.name;`
@@ -388,6 +389,7 @@ app.get("/messages/creategroup", (req, res) =>{
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
+    // function to run again in case of duplicate user ID
     function makeMessageGroup(){
         const id = makeid(20)
         const sql = "INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES ('" + id + "', '"
@@ -413,6 +415,7 @@ app.get("/messages/creategroup", (req, res) =>{
     makeMessageGroup();
 })
 
+// finds all messages in a message group if the username is a member of the group
 app.get("/messages/:groupID", (req,res) =>{
     const groupID = req.params['groupID'];
 
@@ -439,5 +442,107 @@ app.get("/messages/:groupID", (req,res) =>{
         }
         console.log(content);
         res.send(content);
+    })
+})
+
+// user starts a program with a given userID
+app.get("/programs/start/:programID", (req,res) =>{
+    const programID = req.params["programID"];
+
+    // hard code in for testing
+    `const username = req.body.username;`
+    const username = "user99"
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    // check to see if a user is already doing the program
+    const checkSQL = "SELECT * from completing_program WHERE program_id = '"
+        + programID + "' AND user_name = '" + username + "' and completed = 1";
+    db.query(checkSQL, (err1, result1)=>{
+        if(err1) throw err1;
+        // if user is not currently doing that program, start the program
+        if (result1[0]!== undefined){
+            const sql = "INSERT INTO completing_program (program_id, user_name, date_started) VALUES ('"
+                + programID + "','"+ username + "','" + now + "')";
+            db.query(sql, (err, result)=>{
+                if (err) throw err;
+                console.log(result);
+                res.send(username + " started program with ID " + programID);
+            })
+        }
+        // else the user is already doing that program
+        else
+            res.send(username + " already started program with ID " + programID);
+    })
+})
+
+// gets all workouts a user has to do on a given day
+app.get("/today", (req, res) =>{
+    // hard code in for testing
+    `const username = req.body.username;`
+    const username = "user99";
+
+    const sql ="SELECT w.*, m.program_id as program_id, m.program_name as program_name FROM program_contains as c, " +
+        "workout as w, (SELECT * FROM completing_program WHERE user_name = '" + username +"' AND completed = 0) as p," +
+        " program as m WHERE c.day_of = p.day_of_program AND c.program_id=p.program_id and c.workout_id=w.workout_id " +
+        "AND m.program_id = c.program_id"
+    db.query(sql, (err, result)=>{
+        if(err) throw err;
+        let str ="";
+        for(let i=0; i<result.length; i++){
+            let row = result[i];
+            if(i!==0) str+="\n<br/>\n";
+            str+= "Workout ID: " + row['workout_id'] + " || Workout name: " + row['name'] + " || workout creator: "
+                + row['creator_user_name'] + " || Description: " + row['description'] + " || ProgramID: " + row['program_id'] + " || Program Name: " + row['program_name']
+        }
+        console.log(str);
+        res.send(str);
+    })
+})
+
+// find all sets in a workout
+app.get("/workouts/:workoutID", (req,res) =>{
+    const workoutID = req.params["workoutID"];
+    const sql = "SELECT set_num, move_name, rep_count, repetition FROM `set` WHERE workout_id = '" + workoutID + "'";
+
+    db.query(sql, (err, result) =>{
+        if (err) throw err;
+        let setSTR = "";
+        for (let i = 0; i<result.length; i++){
+            let set=result[i]
+            if(i !== 0) setSTR+= "\n<br/>\n";
+            setSTR+= set['set_num'] + ": "+ set['move_name'] + " REP COUNT: " + set['rep_count']
+                + " FOR " + set['repetition'] + " SETS";
+        }
+        console.log(setSTR);
+        res.send(setSTR);
+    })
+})
+
+// adds a user to a message group if above admin level 2
+app.get("/messages/addmember/:groupID", (req,res) =>{
+    const groupID = req.params['groupID'];
+
+    // hard code in for now
+    `const username= req.body.username;
+    const targetUser = req.body.targetuser`
+    const username ='user99';
+    const targetUser='user3';
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const checkSQL="SELECT * FROM message_group_member WHERE group_id = '" + groupID + "' AND user_name='" + targetUser + "'";
+    const insertSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date) " +
+        "SELECT '" + groupID + "', '" + targetUser + "', '" + now + "' FROM message_group_member " +
+        "WHERE '"+ username + "' = user_name AND group_ID = '" + groupID + "' AND admin_level>=2";
+    // check to see if user is already in the group
+    db.query(checkSQL, (err, result)=>{
+        if(err) throw err;
+        if (result[0] === undefined){
+            db.query(insertSQL, (err1, result1) =>{
+                if(err1) throw err1;
+                console.log(result1);
+                res.send(username+ " Added " + targetUser + " to the group with ID " + groupID);
+            })
+        }
+        else res.send("Unable to add " + targetUser + " to the group")
     })
 })
