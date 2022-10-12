@@ -583,5 +583,38 @@ app.get("/workouts/:workoutID/completed", (req, res) =>{
             res.send(username + " completed workout with ID " + workoutID);
         })
     })
+})
 
+// Gets everything for the landing page
+app.get("/landing", (req,res)=>{
+    `const username = req.body.username;`
+
+    const username= 'user99'
+
+    const findFriendsSQL= "SELECT target_user FROM user_follow WHERE source_user = '" + username + "' AND approved = 1";
+    const friendsMovesSQL= "SELECT * FROM completed_move WHERE user_name in (" + findFriendsSQL + ")";
+    const friendWorkoutsSQL= "SELECT * FROM completed_workout WHERE user_name in (" + findFriendsSQL + ")";
+    db.query(friendsMovesSQL, (err, moves)=>{
+        if (err) throw err;
+        console.log(moves);
+        let moveStr='';
+        for(let i=0; i<moves.length; i++){
+            let move=moves[i];
+            if(i!==0) moveStr += "\n<br/>\n";
+            moveStr+= move['user_name'] + " did " + move['move_name'] + " for " + move['rep_count'] +
+                " reps at " + move['weight_in_pounds'] + " pounds on " + move['last_completed'];
+        }
+        db.query(friendWorkoutsSQL, (err1, workouts)=>{
+            if(err1) throw err1;
+            console.log(workouts);
+            let workoutStr='';
+            for(let i=0; i<workouts.length; i++){
+                let workout=workouts[i];
+                if(i!==0) workoutStr+="\n<br/>\n";
+                workoutStr+= workout["user_name"] + " completed workout with ID "
+                    + workout['workout_id'] + " on " + workout['date_completed'];
+            }
+            res.send("MOVES: " + moveStr + "\n<br/> <br/>\n WORKOUTS: " + workoutStr);
+        })
+    })
 })
