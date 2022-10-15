@@ -40,7 +40,7 @@ function makeid(length) {
 }
 
 // login to a user
-app.get("/login", (req, res) =>{
+app.get("/register", (req, res) =>{
     // hard code information in for now
     `const username = req.body.username;
     const email = req.body.username;
@@ -586,7 +586,7 @@ app.get("/workouts/:workoutID/completed", (req, res) =>{
 })
 
 // Gets everything for the landing page
-app.get("/landing", (req,res)=>{
+app.get("/", (req,res)=>{
     `const username = req.body.username;`
 
     const username= 'user99'
