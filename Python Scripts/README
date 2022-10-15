@@ -1,0 +1,6 @@
+In order to run, Python3 is required
+
+In addition, you will need to install the Python mysql connector and numpy.
+These can be installed by running the following pip commands in the command line:
+    'pip install mysql-connector-python'
+    'pip install numpy'

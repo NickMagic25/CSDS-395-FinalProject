@@ -1,0 +1,7 @@
+I got help from these great sources on how to connect mysql and js:
+
+    https://www.youtube.com/watch?v=EN6Dx22cPRI&list=WL&index=15
+    https://www.youtube.com/watch?v=re3OIOr9dJI&t=2307s
+
+Insert if not exists help:
+    https://thispointer.com/insert-record-if-not-exists-in-mysql/
