@@ -1,4 +1,5 @@
 import WorkOutList from "../Components/workouts/WorkOutList";
+import MainNavigation from "../Components/layout/MainNavigation"
 
 const DUMMY_DATA = [
     {
@@ -23,6 +24,7 @@ const DUMMY_DATA = [
 
 function HomePage(){
     return <section>
+      <MainNavigation />
         <h1>Quick Workouts</h1>
         <WorkOutList workouts = {DUMMY_DATA}></WorkOutList>
     </section>;
