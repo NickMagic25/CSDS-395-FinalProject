@@ -1,5 +1,4 @@
 import "./navbar.css"
-import {Search, Person} from "@material-ui/icons";
 export default function Navbar() {
     return (
         <div className="navbarContainer">
