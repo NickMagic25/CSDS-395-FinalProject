@@ -1,5 +1,24 @@
+import {BrowserRouter, Router, Routes, Route} from 'react-router-dom'
 import logo from './logo.svg';
 import './App.css';
+<<<<<<< HEAD
+import Dashboard from './pages/dashboard/Dashboard';
+
+function App() {
+  
+  return (
+  <BrowserRouter>
+    <Routes>
+      <Route>
+        <Route path='/' element={<Dashboard />} />
+      </Route>
+    </Routes>
+  </BrowserRouter>
+
+    );
+    
+  
+=======
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import Navbar from './Navbar';
 import Register from './Components/registerPage/register';
@@ -21,6 +40,7 @@ function App() {
     </Router>
     </Provider>
   )
+>>>>>>> main
 }
 
 export default App;
