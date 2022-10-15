@@ -546,3 +546,75 @@ app.get("/messages/addmember/:groupID", (req,res) =>{
         else res.send("Unable to add " + targetUser + " to the group")
     })
 })
+
+app.get("/workouts/:workoutID/completed", (req, res) =>{
+    const workoutID = req.params["workoutID"];
+
+    // hard code in for testing
+    `const username = req.body.username;`
+    const username = "user99";
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    // SQL for completing the workout
+    const completionSQL="INSERT INTO completed_workout (workout_id, user_name, date_completed) VALUES ('" + workoutID
+        + "', '" + username + "', '" + now + "')";
+    // SQL for finding if the workout is a part of a program the USER is doing and if they're doing it on the day of the program
+    const programIDSQL = "SELECT c.program_id FROM completing_program as c, program_contains as p WHERE " +
+        "c.program_id = p.program_id AND c.user_name = '"+ username +"' AND p.workout_id = '"+ workoutID+ "' " +
+        "AND c.day_of_program = p.day_of"
+    db.query(completionSQL, (err, result)=>{
+        if(err) throw err;
+        console.log(result);
+        db.query(programIDSQL, (err1, result1) =>{
+            if(err1) throw err1;
+            console.log(result1);
+            if(result1[0] !== undefined){
+                let programID = result1[0]["program_id"];
+                // sql to update the program
+                const updateSQL = "UPDATE completing_program SET day_of_program = day_of_program + 1 WHERE program_id = '"
+                    + programID + "' AND user_name = '" + username + "'";
+                db.query(updateSQL, (err2, result2)=>{
+                    if(err2) throw err2;
+                    console.log(result2);
+                    res.send(username + " completed workout with ID " + workoutID + " and advanced in program with ID " + programID)
+                })
+            }
+            else
+            res.send(username + " completed workout with ID " + workoutID);
+        })
+    })
+})
+
+// Gets everything for the landing page
+app.get("/landing", (req,res)=>{
+    `const username = req.body.username;`
+
+    const username= 'user99'
+
+    const findFriendsSQL= "SELECT target_user FROM user_follow WHERE source_user = '" + username + "' AND approved = 1";
+    const friendsMovesSQL= "SELECT * FROM completed_move WHERE user_name in (" + findFriendsSQL + ")";
+    const friendWorkoutsSQL= "SELECT * FROM completed_workout WHERE user_name in (" + findFriendsSQL + ")";
+    db.query(friendsMovesSQL, (err, moves)=>{
+        if (err) throw err;
+        console.log(moves);
+        let moveStr='';
+        for(let i=0; i<moves.length; i++){
+            let move=moves[i];
+            if(i!==0) moveStr += "\n<br/>\n";
+            moveStr+= move['user_name'] + " did " + move['move_name'] + " for " + move['rep_count'] +
+                " reps at " + move['weight_in_pounds'] + " pounds on " + move['last_completed'];
+        }
+        db.query(friendWorkoutsSQL, (err1, workouts)=>{
+            if(err1) throw err1;
+            console.log(workouts);
+            let workoutStr='';
+            for(let i=0; i<workouts.length; i++){
+                let workout=workouts[i];
+                if(i!==0) workoutStr+="\n<br/>\n";
+                workoutStr+= workout["user_name"] + " completed workout with ID "
+                    + workout['workout_id'] + " on " + workout['date_completed'];
+            }
+            res.send("MOVES: " + moveStr + "\n<br/> <br/>\n WORKOUTS: " + workoutStr);
+        })
+    })
+})
