@@ -88,11 +88,16 @@ class Login extends Component {
           <br />
           <input type="submit" value="enter"></input>
         </form>
-        <Link to="" className="btn-flat waves-effect">
+        <Link to="/register" className="btn-flat waves-effect">
           Don't have an account? Sign Up
         </Link>
+        <br/>
         <Link to="/forgot" className="btn-flat waves-effect">
           Forgot your password?
+        </Link>
+        <br/>
+        <Link to="/dashboard" className="btn-flat waves-effect">
+          Enter
         </Link>
       </div>
     );
