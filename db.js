@@ -5,11 +5,12 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mysql = require('mysql');
 const Console = require("console");
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());
 
-app.listen('5000', () => {
+app.listen('5001', () => {
     console.log("Server started on port 5000!");
     console.log("Go to localhost:5000 to start");
 });
@@ -25,7 +26,8 @@ const db = mysql.createConnection({
 
 // to do: find a hashing algorithm for the password
 function hashPassword(password){
-    return password;
+    let hash = bcrypt.hashSync(password, 10);
+    return hash;
 }
 
 // from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
@@ -42,26 +44,41 @@ function makeid(length) {
 
 // // login to a user
  app.get("/login", (req, res) =>{
-     // hard code information in for now
      const username = req.body.username;
      const email = req.body.email;
-     let password = req.body.password;
+     const password = req.body.password;
 
 
      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-     password = hashPassword(password);
-     const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + email + "' or mobile_number "+
-         "= '0') AND hashed_password = '" + password + "'";
-     const updateLastLoginSQL = "UPDATE user SET last_online = '" + now  + "' WHERE user_name = '" + username + "'";
-     db.query(sql, function(err, result){
-         if (err) throw err;
-         db.query(updateLastLoginSQL, (err1, result1) =>{
-             if(err1) throw err1;
-             console.log(result1);
-             console.log("updated last online")
-             console.log(result);
-             res.send(result);
-         })
+
+     const getHashPasswordSQL = "SELECT hashed_password FROM user WHERE user_name = '" + username + "'";
+     db.query(getHashPasswordSQL, (error, password_result)=>{
+         if(error) throw error;
+         if(password_result[0]!=null) {
+             let hashed_password=password_result[0]["hashed_password"]
+             console.log(hashed_password);
+             if(bcrypt.compareSync(password,hashed_password)){
+                 console.log("Match!")
+                 const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + email + "' or mobile_number " +
+                     "= '0') AND hashed_password = '" + hashed_password + "'";
+                 const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
+                 db.query(sql, function (err, result) {
+                     if (err) throw err;
+                     db.query(updateLastLoginSQL, (err1, result1) => {
+                         if (err1) throw err1;
+                         console.log(result1);
+                         console.log("updated last online")
+                         console.log(result);
+                         res.send(result);
+                     })
+                 })
+             }
+             else{
+                 console.log("Not a match");
+                 res.send("Incorrect password");
+             }
+         }
+         else res.send("username or email does not exist");
      })
  })
 
@@ -76,6 +93,7 @@ app.post("/register", (req, res) => {
     const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     password = hashPassword(password);
+    console.log(password);
     const sql = "INSERT INTO user (user_name, first_name, last_name, mobile_number, email, hashed_password, " +
         "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + 0 + "','"
         + email + "','" + password + "','" + creationDate + "','" + creationDate + "', NULL)";
