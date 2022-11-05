@@ -25,8 +25,8 @@ const db = mysql.createConnection({
 })
 
 // to do: find a hashing algorithm for the password
-function hashPassword(password){
-    let hash = bcrypt.hashSync(password, 10);
+function hashString(string){
+    let hash = bcrypt.hashSync(string, 10);
     return hash;
 }
 
@@ -51,15 +51,16 @@ function makeid(length) {
 
      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-     const getHashPasswordSQL = "SELECT hashed_password FROM user WHERE user_name = '" + username + "'";
-     db.query(getHashPasswordSQL, (error, password_result)=>{
+     const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
+     db.query(hashedItemsSQL, (error, items)=>{
+         console.log(items)
          if(error) throw error;
-         if(password_result[0]!=null) {
-             let hashed_password=password_result[0]["hashed_password"]
-             console.log(hashed_password);
-             if(bcrypt.compareSync(password,hashed_password)){
+         if(items[0]!=null) {
+             let hashed_password=items[0]["hashed_password"]
+             let hashed_email = items[0]["email"]
+             if(bcrypt.compareSync(password,hashed_password) && bcrypt.compareSync(email, hashed_email)){
                  console.log("Match!")
-                 const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + email + "' or mobile_number " +
+                 const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + hashed_email + "' or mobile_number " +
                      "= '0') AND hashed_password = '" + hashed_password + "'";
                  const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
                  db.query(sql, function (err, result) {
@@ -85,14 +86,15 @@ function makeid(length) {
 // create an account
 app.post("/register", (req, res) => {
     const username = req.body.username;
-    const email = req.body.email;
+    let email = req.body.email;
     let password = req.body.password;
     const firstName = req.body.firstName;
     const lastName= req.body.lastName;
 
     const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-    password = hashPassword(password);
+    password = hashString(password);
+    email = hashString(email);
     console.log(password);
     const sql = "INSERT INTO user (user_name, first_name, last_name, mobile_number, email, hashed_password, " +
         "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + 0 + "','"
