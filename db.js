@@ -10,9 +10,11 @@ const bcrypt = require('bcrypt');
 const app = express();
 app.use(express.json());
 
-app.listen('5001', () => {
-    console.log("Server started on port 5000!");
-    console.log("Go to localhost:5000 to start");
+const port = '5000'
+
+app.listen(port, () => {
+    console.log("Server started on port " + port + "!");
+    console.log("Go to localhost:" + port + " to start");
 });
 
 const db = mysql.createConnection({
@@ -24,7 +26,8 @@ const db = mysql.createConnection({
     multipleStatements: true
 })
 
-// to do: find a hashing algorithm for the password
+// uses bcrypt hashing algorithim to hash a string
+// salt length of 10
 function hashString(string){
     let hash = bcrypt.hashSync(string, 10);
     return hash;
@@ -386,7 +389,7 @@ app.get("/today", (req, res) =>{
     db.query(sql, (err, result)=>{
         if(err) throw err;
         console.log(result);
-        res.send(result );
+        res.send(result);
     })
 })
 
@@ -472,20 +475,13 @@ app.get("/", (req,res)=>{
     const findFriendsSQL= "SELECT target_user FROM user_follow WHERE source_user = '" + username + "' AND approved = 1";
     const friendsMovesSQL= "SELECT * FROM completed_move WHERE user_name in (" + findFriendsSQL + ")";
     const friendWorkoutsSQL= "SELECT * FROM completed_workout WHERE user_name in (" + findFriendsSQL + ")";
-    db.query(friendsMovesSQL, (err, moves)=>{
+    const postSQL = "SELECT post.* FROM user_post as post WHERE post.user_name in ("+ findFriendsSQL +")";
+    const commentSQL = "SELECT comment.* FROM post_comment as comment,("+ postSQL + ") as p WHERE " +
+        "p.post_id = comment.post_id";
+
+    db.query(friendsMovesSQL + ";" + friendWorkoutsSQL+ ";" +postSQL+ ";" + commentSQL, (err, moves)=>{
         if (err) throw err;
         console.log(moves);
-        let moveStr='';
-        for(let i=0; i<moves.length; i++){
-            let move=moves[i];
-            if(i!==0) moveStr += "\n<br/>\n";
-            moveStr+= move['user_name'] + " did " + move['move_name'] + " for " + move['rep_count'] +
-                " reps at " + move['weight_in_pounds'] + " pounds on " + move['last_completed'];
-        }
-        db.query(friendWorkoutsSQL, (err1, workouts)=>{
-            if(err1) throw err1;
-            console.log(workouts);
-            res.send(workouts);
-        })
+        res.send(moves)
     })
 })
