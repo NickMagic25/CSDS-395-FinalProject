@@ -485,3 +485,96 @@ app.get("/", (req,res)=>{
         res.send(moves)
     })
 })
+
+// Keeps track of messages for a unique groupID
+app.post("/messages/:groupID" , (req,res) =>{
+    
+    const groupID = req.params.groupID;
+    const userName = req.body.userName;
+    const message = req.body.message;
+    
+    //Date and time
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const insertSQL= "INSERT INTO message(group_id, content, sender, sent_time) VALUES ('" + groupID
+    + "', '" + message + "', '" + userName + "', '" + now + "')";
+    db.query(insertSQL, (err, result)=>{
+        if(err) {
+            throw err;
+        }
+        console.log(result);
+        res.send(result);
+    })
+})
+
+// Find posts from a given user
+app.get("/posts/:userName", (req,res) => {
+    const username = req.params["userName"];
+
+    const sql = "SELECT up.user-post FROM user u, user-post up WHERE u.user_name = up.user_name AND u.user_name = '" + username + "'";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send(result);
+    })
+})
+
+// Find comments to a given post
+app.get("/comments/:postKey", (req,res) => {
+    const postkey = req.params["postKey"];
+
+    const sql = "SELECT DISTINCT pc.message FROM user-post up, post_meta pm, post_comment pc WHERE up.post_id = pm.post_id AND up.post_id = pc.post_id AND pm.key = '" + postkey + "'";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send(result);
+    })
+})
+
+// Find likes to a given comment
+app.get("/likes/:message", (req,res) => {
+    const message = req.params["message"];
+
+    const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '%" + message +"%'";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send(result);
+    })
+})
+
+// Find posts a user liked
+app.get("/posts/likes/:userName", (req,res) => {
+    const username = req.params["userName"];
+
+    const sql = "SELECT pm.content, pm.key FROM user_post up, post_like pl, post_meta pm WHERE pl.user_name = '" + username + "' AND pl.post_id = up.post_id AND up.post_id = pm.post_id";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send(result);
+    })
+})
+
+// Find moves a given user has done
+app.get("/moves/done/:userName", (req,res) => {
+    const username = req.params["userName"];
+
+    const sql = "SELECT cm.move_name FROM user u, completed_move cm WHERE u.user_name = cm.user_name AND u.user_name = '" + username + "'";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send(result);
+    })
+})
+
+// Find a string sent from a given message group
+app.get("/message/:messageGroup/:message", (req,res) => {
+    const messageGroup = req.params["messageGroup"];
+    const message = req.params["message"];
+
+    const sql = "SELECT m.content FROM message_group mg, message m WHERE mg.group_id = m.group_id AND mg.group_name = '" + messageGroup + "' AND m.content LIKE '" + %message% + "'";
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send(result);
+    })
+})
