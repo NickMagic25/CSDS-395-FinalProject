@@ -171,17 +171,12 @@ app.get("/workouts/search", (req,res) => {
 
 // searches programs to find a program that meets the user's requirements
 app.get("/programs/search", (req,res) => {
-    // hard coding in example for now
-    `// default length to 0
+    // default length to 0
     const length = req.body.numDays;
     // either >, <, or blank string; allows for user to search for program of certain length or greater/lesser length
     const comparer = req.body.comparer;
     // search can be the name of the program or the creator
-    const search = req.body.searchBar;`
-
-    const length = "60";
-    const comparer = ">"
-    const search = "some name";
+    const search = req.body.searchBar;
 
     console.log("Searching for a program of length " + length + " with name " + search);
     const sql = "SELECT * FROM program WHERE (program_name = '" + search + "' OR program_creator = '" + search +
@@ -265,6 +260,7 @@ app.post("/workouts/create", (req, res) =>{
     makeWorkout();
 })
 
+// creates a program
 app.post("/programs/create", (req, res) =>{
     const programName = req.body.name;
     const creator = req.body.username;
@@ -432,6 +428,7 @@ app.post("/messages/addmember/:groupID", (req,res) =>{
     })
 })
 
+// completes a workout, increments program by one if workout is a part of a program the user is doing
 app.post("/workouts/:workoutID/completed", (req, res) =>{
     const workoutID = req.params["workoutID"];
     const username = req.body.username;
@@ -486,17 +483,18 @@ app.get("/", (req,res)=>{
     })
 })
 
-// Keeps track of messages for a unique groupID
+// Sends message to a message group
 app.post("/messages/:groupID" , (req,res) =>{
     
     const groupID = req.params.groupID;
-    const userName = req.body.userName;
+    const userName = req.body.username;
     const message = req.body.message;
     
     //Date and time
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    const insertSQL= "INSERT INTO message(group_id, content, sender, sent_time) VALUES ('" + groupID
-    + "', '" + message + "', '" + userName + "', '" + now + "')";
+    const insertSQL= "INSERT INTO message(group_id, content, sender, send_time) SELECT '" + groupID + "', '" + message +
+        "', '" + userName + "', '" + now +"' FROM message_group_member WHERE user_name = '"+ userName +
+        "' AND group_ID='"+ groupID + "'" ;
     db.query(insertSQL, (err, result)=>{
         if(err) {
             throw err;
@@ -507,10 +505,13 @@ app.post("/messages/:groupID" , (req,res) =>{
 })
 
 // Find posts from a given user
-app.get("/posts/:userName", (req,res) => {
-    const username = req.params["userName"];
+app.get("/posts/:target", (req,res) => {
+    const targetUser = req.params["target"];
+    const username = req.body.username;
 
-    const sql = "SELECT up.user-post FROM user u, user-post up WHERE u.user_name = up.user_name AND u.user_name = '" + username + "'";
+    const sql = "SELECT up.* FROM user_post up WHERE up.user_name in (SELECT target_user from user_follow WHERE " +
+        "source_user = '"+ username +"' AND target_user = '"+ targetUser +"' AND approved = 1) OR up.user_name in " +
+        "(SELECT user_name from user WHERE up.user_name='"+ targetUser +"' AND private_account=0)";
     db.query(sql, (err, result) => {
         if (err) throw err;
         console.log(result);
@@ -531,22 +532,10 @@ app.get("/comments/:postKey", (req,res) => {
 })
 
 // Find likes to a given comment
-app.get("/likes/:message", (req,res) => {
+app.get("/comments/likes/:message", (req,res) => {
     const message = req.params["message"];
 
     const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '%" + message +"%'";
-    db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
-    })
-})
-
-// Find posts a user liked
-app.get("/posts/likes/:userName", (req,res) => {
-    const username = req.params["userName"];
-
-    const sql = "SELECT pm.content, pm.key FROM user_post up, post_like pl, post_meta pm WHERE pl.user_name = '" + username + "' AND pl.post_id = up.post_id AND up.post_id = pm.post_id";
     db.query(sql, (err, result) => {
         if (err) throw err;
         console.log(result);
@@ -571,7 +560,7 @@ app.get("/message/:messageGroup/:message", (req,res) => {
     const messageGroup = req.params["messageGroup"];
     const message = req.params["message"];
 
-    const sql = "SELECT m.content FROM message_group mg, message m WHERE mg.group_id = m.group_id AND mg.group_name = '" + messageGroup + "' AND m.content LIKE '" + %message% + "'";
+    const sql = "SELECT m.content FROM message_group mg, message m WHERE mg.group_id = m.group_id AND mg.group_name = '" + messageGroup + "' AND m.content LIKE '" + message + "'";
     db.query(sql, (err, result) => {
         if (err) throw err;
         console.log(result);
