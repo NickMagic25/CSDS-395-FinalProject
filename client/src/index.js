@@ -5,15 +5,16 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { WorkoutsProvider } from "./contexts/WorkoutsContext"
 import Workout from "./pages/workout/Workout"
+import {BrowserRouter} from "react-router-dom"
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  //<React.StrictMode>
     <WorkoutsProvider>
       <App />
     </WorkoutsProvider>
-  </React.StrictMode>
+  //</React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function
