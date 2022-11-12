@@ -587,7 +587,7 @@ def main():
             user_arr.append("user" + str(i))
         add_user_follows(cursor, user_arr, 100)
         print("committing to database...")
-        db.commit()
+        #db.commit()
         print("committed!")
         print('connection terminated')
     except Exception as e:
