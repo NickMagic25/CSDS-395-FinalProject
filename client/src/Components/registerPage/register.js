@@ -48,6 +48,9 @@ class Register extends Component {
     const { errors } = this.state;
     return (
       <div className="registerContainer">
+        <Link to="/dashboard" className="btn-flat waves-effect">
+          Already have an account? Sign in
+        </Link>
         <h1 style={{ color: "#A6CEB6" }} align="middle">
           Sign Up
         </h1>
