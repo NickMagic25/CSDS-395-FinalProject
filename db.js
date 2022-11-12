@@ -129,13 +129,6 @@ app.get("/user/following/:userName", (req, res) =>{
     const sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = '" + userName + "'";
     db.query(sql,function (err, result){
         if (err) throw err;
-        `let following = [];
-        for (let i = 0; i < result.length; i++){
-            let user = result[i]['target_user']
-            console.log(user)
-            following.push(user)
-        }
-        console.log(userName + " is following "+ following)`
         res.send(result);
     })
 })
@@ -159,10 +152,8 @@ app.get("/user/interactions/:userName", (req, res) => {
 // searches a username from either a name or creator username
 app.get("/workouts/search", (req,res) => {
     // commenting out to hard code in a name
-    `const search = req.body.searchBar;`
+    const search = req.body.searchBar;
 
-    // hard coding in a username to search for
-    const search = 'user37'
     console.log("Searching:", search);
     const sql = "SELECT name, workout_id, creator_user_name FROM workout WHERE name ='" + search +
         "' OR creator_user_name = '" + search + "'";
