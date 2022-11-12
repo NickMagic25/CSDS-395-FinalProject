@@ -5,9 +5,13 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mysql = require('mysql');
 const Console = require("console");
+const cors = require("cors");
+
 const bcrypt = require('bcrypt');
 
+
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const port = '5000'
