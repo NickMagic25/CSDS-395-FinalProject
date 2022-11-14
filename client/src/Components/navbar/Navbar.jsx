@@ -14,6 +14,7 @@ export default function Navbar() {
             </div>
             <div className="navbarRight">
                 <Link to="/workout" className="navbarLink">My Workouts</Link>
+                <Link to="/chat" className="navbarLink">Chat</Link>
                 <span className="navbarLink">Friends</span>
             </div>
             <div className="navbarIcons">

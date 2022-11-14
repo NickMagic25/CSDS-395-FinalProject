@@ -555,7 +555,7 @@ app.get("/message/:messageGroup/:message", (req,res) => {
     const messageGroup = req.params["messageGroup"];
     const message = req.params["message"];
 
-    const sql = "SELECT m.content FROM message_group mg, message m WHERE mg.group_id = m.group_id AND mg.group_name = '" + messageGroup + "' AND m.content LIKE '" + message + "'";
+    const sql = "SELECT m.content FROM message_group mg, message m WHERE mg.group_id = m.group_id AND mg.group_name = '" + messageGroup + "' AND m.content LIKE '%" + message + "%'";
     db.query(sql, (err, result) => {
         if (err) throw err;
         console.log(result);
