@@ -1,0 +1,4 @@
+Building a Docker Image:
+In order to build the Docker Image, you must first run 'npm install' with node version 16+.
+After run the command 'docker build . -t <image tag>'.
+To run the image, use 'docker run -p <your port>:5000 <image tag>' to start the container.
