@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-var app = require('../app');
+var app = require('../server/src/app');
 var debug = require('debug')('instajacked:server');
 var http = require('http');
 
