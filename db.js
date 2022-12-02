@@ -1,12 +1,6 @@
-var createError = require('http-errors');
 var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
 const mysql = require('mysql');
-const Console = require("console");
 const cors = require("cors");
-
 const bcrypt = require('bcrypt');
 
 
@@ -33,8 +27,7 @@ const db = mysql.createConnection({
 // uses bcrypt hashing algorithim to hash a string
 // salt length of 10
 function hashString(string){
-    let hash = bcrypt.hashSync(string, 10);
-    return hash;
+    return bcrypt.hashSync(string, 10);
 }
 
 // from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
@@ -50,45 +43,45 @@ function makeid(length) {
 }
 
 // // login to a user
- app.get("/login", (req, res) =>{
-     const username = req.body.username;
-     const email = req.body.email;
-     const password = req.body.password;
+app.get("/login", (req, res) =>{
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
 
 
-     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-     const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
-     db.query(hashedItemsSQL, (error, items)=>{
-         console.log(items)
-         if(error) throw error;
-         if(items[0]!=null) {
-             let hashed_password=items[0]["hashed_password"]
-             let hashed_email = items[0]["email"]
-             if(bcrypt.compareSync(password,hashed_password) && bcrypt.compareSync(email, hashed_email)){
-                 console.log("Match!")
-                 const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + hashed_email + "' or mobile_number " +
-                     "= '0') AND hashed_password = '" + hashed_password + "'";
-                 const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
-                 db.query(sql, function (err, result) {
-                     if (err) console.log(err);
-                     db.query(updateLastLoginSQL, (err1, result1) => {
-                         if (err1) console.log(err1);
-                         console.log(result1);
-                         console.log("updated last online")
-                         console.log(result);
-                         res.send(result);
-                     })
-                 })
-             }
-             else{
-                 console.log("Not a match");
-                 res.send("Incorrect password");
-             }
-         }
-         else res.send("username or email does not exist");
-     })
- })
+    const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
+    db.query(hashedItemsSQL, (error, items)=>{
+        console.log(items)
+        if(error) throw error;
+        if(items[0]!=null) {
+            let hashed_password=items[0]["hashed_password"]
+            let hashed_email = items[0]["email"]
+            if(bcrypt.compareSync(password,hashed_password) && bcrypt.compareSync(email, hashed_email)){
+                console.log("Match!")
+                const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + hashed_email + "' or mobile_number " +
+                    "= '0') AND hashed_password = '" + hashed_password + "'";
+                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
+                db.query(sql, function (err, result) {
+                    if (err) console.log(err);
+                    db.query(updateLastLoginSQL, (err1, result1) => {
+                        if (err1) console.log(err1);
+                        console.log(result1);
+                        console.log("updated last online")
+                        console.log(result);
+                        res.send(result);
+                    })
+                })
+            }
+            else{
+                console.log("Not a match");
+                res.send("Incorrect password");
+            }
+        }
+        else res.send("username or email does not exist");
+    })
+})
 
 // create an account
 app.post("/register", (req, res) => {
@@ -113,10 +106,15 @@ app.post("/register", (req, res) => {
                 console.log("Duplicate entry");
                 res.send("Username email or password already in use")
             }
-            else throw err;
+            else {
+                console.log(err);
+                res.send(null)
+            }
         }
-        console.log(result);
-        res.send("Added user")
+        else {
+            console.log(result);
+            res.send("Added user")
+        }
     })
 })
 
@@ -128,8 +126,14 @@ app.get("/user/following/:userName", (req, res) =>{
     console.log("Current user",userName);
     const sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = '" + userName + "'";
     db.query(sql,function (err, result){
-        if (err) throw err;
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -142,9 +146,14 @@ app.get("/user/interactions/:userName", (req, res) => {
     const sql = "SELECT c.post_id FROM post_comment AS c WHERE c.user_name = '" + username
         + "'; SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + username + "'";
     db.query(sql, function (err, result){
-        if(err) throw err;
-        console.log(result)
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -158,9 +167,14 @@ app.get("/workouts/search", (req,res) => {
     const sql = "SELECT name, workout_id, creator_user_name FROM workout WHERE name ='" + search +
         "' OR creator_user_name = '" + search + "'";
     db.query(sql, (err, result) =>{
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -177,9 +191,14 @@ app.get("/programs/search", (req,res) => {
     const sql = "SELECT * FROM program WHERE (program_name = '" + search + "' OR program_creator = '" + search +
         "') AND length " + comparer + "= " + length;
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result)
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -191,9 +210,14 @@ app.get("/workouts/moves/:workoutID", (req, res) => {
     const SQL = "SELECT s.* FROM workout as w, `set` as s WHERE w.workout_id = '" + workoutID
         + "' AND s.workout_id = '" + workoutID + "'; SELECT * FROM workout_meta WHERE workout_id = '" + workoutID + "'";
     db.query(SQL, (err, result) => {
-        if(err) throw err;
-        console.log(result)
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -206,9 +230,14 @@ app.get("/programs/workouts/:programID", (req, res) => {
         + programID +"' AND w.workout_id = c.workout_id";
     const metaSQL = "SELECT * FROM program_meta WHERE program_id = '" + programID +"'";
     db.query(programSQL+ ";" + metaSQL, (err, result) => {
-        if(err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -235,22 +264,34 @@ app.post("/workouts/create", (req, res) =>{
                     // run again with same base params, workoutID will be randomly generated
                     makeWorkout();
                 }
-                else throw err;
+                else {
+                    console.log(err);
+                    res.send("null")
+                }
+            }
+            else{
+                console.log(result);
+                for(let i=0; i<moves.length;i++){
+                    let set = moves[i];
+                    let name = set[0];
+                    let repCount= set[1];
+                    let repetition = set[2];
+                    let moveSQL = "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num) VALUES ('"
+                        + workoutID + "', '" + name+ "'," + repCount + "," + repetition + "," + i + ")";
+                    db.query(moveSQL, (err1, result1) =>{
+                        if (err1) {
+                            console.log(err1);
+                            res.send(null);
+                        }
+                        else {
+                            console.log(result1);
+                            res.send(result1);
+                        }
+                    })
+                }
+                res.send("Added workout with ID:" + workoutID + " and name " + workoutName);
             }
         })
-        for(let i=0; i<moves.length;i++){
-            let set = moves[i];
-            let name = set[0];
-            let repCount= set[1];
-            let repetition = set[2];
-            let moveSQL = "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num) VALUES ('"
-                + workoutID + "', '" + name+ "'," + repCount + "," + repetition + "," + i + ")";
-            db.query(moveSQL, (err, result) =>{
-                if (err) throw err;
-                console.log(result);
-            })
-        }
-        res.send("Added workout with ID:" + workoutID + " and name " + workoutName);
     }
     makeWorkout();
 })
@@ -273,17 +314,29 @@ app.post("/programs/create", (req, res) =>{
                     console.log("Duplicate entry, rerun with new programID")
                     makeProgram();
                 }
-                else throw err;
+                else {
+                    console.log(err);
+                    res.send(null)
+                }
             }
-            for(let i=0; i<workouts.length;i++){
-                let id = workouts[i];
-                let dayOf=i+1;
-                let workoutsSQL = "INSERT INTO program_contains (program_id, workout_id, day_of) VALUES ('"+programID+"','"+id+"',"+dayOf+")";
-                db.query(workoutsSQL, (err, result) =>{
-                    if (err) throw err;
-                    console.log(result);
-                })}
-            res.send("Successfully made program with ID: " + programID + " and name: " + programName)
+            else{
+                console.log(result);
+                for(let i=0; i<workouts.length;i++){
+                    let id = workouts[i];
+                    let dayOf=i+1;
+                    let workoutsSQL = "INSERT INTO program_contains (program_id, workout_id, day_of) VALUES ('"+programID+"','"+id+"',"+dayOf+")";
+                    db.query(workoutsSQL, (err, result) =>{
+                        if (err) {
+                            console.log(err);
+                            res.send(null);
+                        }
+                        else {
+                            console.log(result);
+                            res.send(result);
+                        }
+                    })}
+            }
+            res.send(null);
         })
     }
     makeProgram()
@@ -308,14 +361,25 @@ app.post("/messages/creategroup", (req, res) =>{
                     console.log("Duplicate entry, rerun with new groupID")
                     makeMessageGroup();
                 }
-                else throw err;
-            }
-            db.query(adminSQL, (err1, result1)=>{
-                    if (err1) throw err1;
-                    console.log(result, result1);
-                    res.send("New group with ID" + id + " created");
+                else{
+                    console.log(err);
+                    res.send(null)
                 }
-            )
+            }
+            else{
+                console.log(result);
+                db.query(adminSQL, (err1, result1)=>{
+                        if (err1) {
+                            console.log(err1);
+                            res.send(null);
+                        }
+                        else {
+                            console.log(result1);
+                            res.send(result1);
+                        }
+                    }
+                )
+            }
         })
     }
     makeMessageGroup();
@@ -331,8 +395,11 @@ app.get("/messages/:groupID", (req,res) =>{
     const messageSQL = "SELECT content, sender, send_time FROM message WHERE group_id = '" + groupID + "' AND '"
         + username + "' in (" + membersSQl + ")";
     db.query(messageSQL, (err, result) =>{
-        if(err) throw err;
-        if(result[0] === undefined)
+        if(err){
+            console.log(err);
+            res.send(null);
+        }
+        else if(result[0] === undefined)
             res.send("Group does not exists or not a member of group");
         else{
             console.log(result);
@@ -351,21 +418,28 @@ app.post("/programs/start/:programID", (req,res) =>{
     const checkSQL = "SELECT * from completing_program WHERE program_id = '"
         + programID + "' AND user_name = '" + username + "' and completed = 0";
     db.query(checkSQL, (err1, result1)=>{
-        if(err1) throw err1;
-        console.log(result1);
+        if(err1){
+            console.log(err1);
+            res.send(null);
+        }
         // if user is not currently doing that program, start the program
-        if (result1[0]=== undefined){
+        else if (result1[0]=== undefined){
             const sql = "INSERT INTO completing_program (program_id, user_name, date_started) VALUES ('"
                 + programID + "','"+ username + "','" + now + "')";
             db.query(sql, (err, result)=>{
-                if (err) throw err;
-                console.log(result);
-                res.send(username + " started program with ID " + programID);
+                if (err) {
+                    console.log(err);
+                    res.send(null);
+                }
+                else {
+                    console.log(result);
+                    res.send(result);
+                }
             })
         }
         // else the user is already doing that program
         else
-            res.send(username + " already started program with ID " + programID);
+            res.send(null);
     })
 })
 
@@ -378,9 +452,14 @@ app.get("/today", (req, res) =>{
         " program as m WHERE c.day_of = p.day_of_program AND c.program_id=p.program_id and c.workout_id=w.workout_id " +
         "AND m.program_id = c.program_id"
     db.query(sql, (err, result)=>{
-        if(err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -390,9 +469,14 @@ app.get("/workouts/:workoutID", (req,res) =>{
     const sql = "SELECT set_num, move_name, rep_count, repetition FROM `set` WHERE workout_id = '" + workoutID + "'";
 
     db.query(sql, (err, result) =>{
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -411,12 +495,20 @@ app.post("/messages/addmember/:groupID", (req,res) =>{
         "WHERE '"+ username + "' = user_name AND group_ID = '" + groupID + "' AND admin_level>=2";
     // check to see if user is already in the group
     db.query(checkSQL, (err, result)=>{
-        if(err) throw err;
-        if (result[0] === undefined){
+        if(err){
+            console.log(err);
+            res.send(null);
+        }
+        else if (result[0] === undefined){
             db.query(insertSQL, (err1, result1) =>{
-                if(err1) throw err1;
-                console.log(result1);
-                res.send(username+ " Added " + targetUser + " to the group with ID " + groupID);
+                if (err1) {
+                    console.log(err1);
+                    res.send(null);
+                }
+                else {
+                    console.log(result1);
+                    res.send(result1);
+                }
             })
         }
         else res.send("Unable to add " + targetUser + " to the group")
@@ -437,25 +529,37 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
         "c.program_id = p.program_id AND c.user_name = '"+ username +"' AND p.workout_id = '"+ workoutID+ "' " +
         "AND c.day_of_program = p.day_of"
     db.query(completionSQL, (err, result)=>{
-        if(err) throw err;
-        console.log(result);
-        db.query(programIDSQL, (err1, result1) =>{
-            if(err1) throw err1;
-            console.log(result1);
-            if(result1[0] !== undefined){
-                let programID = result1[0]["program_id"];
-                // sql to update the program
-                const updateSQL = "UPDATE completing_program SET day_of_program = day_of_program + 1 WHERE program_id = '"
-                    + programID + "' AND user_name = '" + username + "'";
-                db.query(updateSQL, (err2, result2)=>{
-                    if(err2) throw err2;
-                    console.log(result2);
-                    res.send(username + " completed workout with ID " + workoutID + " and advanced in program with ID " + programID)
-                })
-            }
-            else
-                res.send(username + " completed workout with ID " + workoutID);
-        })
+        if(err){
+            console.log(err);
+            res.send(null);
+        }
+        else{
+            console.log(result);
+            db.query(programIDSQL, (err1, result1) =>{
+                if(err1){
+                    console.log(err);
+                    res.send(null);
+                }
+                else if(result1[0] !== undefined){
+                    let programID = result1[0]["program_id"];
+                    // sql to update the program
+                    const updateSQL = "UPDATE completing_program SET day_of_program = day_of_program + 1 WHERE program_id = '"
+                        + programID + "' AND user_name = '" + username + "'";
+                    db.query(updateSQL, (err2, result2)=>{
+                        if (err2) {
+                            console.log(err2);
+                            res.send(null);
+                        }
+                        else {
+                            console.log(result2);
+                            res.send(result2);
+                        }
+                    })
+                }
+                else
+                    res.send(null);
+            })
+        }
     })
 })
 
@@ -471,31 +575,39 @@ app.get("/", (req,res)=>{
     const commentSQL = "SELECT comment.* FROM post_comment as comment,("+ postSQL + ") as p WHERE " +
         "p.post_id = comment.post_id";
 
-    db.query(friendsMovesSQL + ";" + friendWorkoutsSQL+ ";" +postSQL+ ";" + commentSQL, (err, moves)=>{
-        if (err) throw err;
-        console.log(moves);
-        res.send(moves)
+    db.query(friendsMovesSQL + ";" + friendWorkoutsSQL+ ";" +postSQL+ ";" + commentSQL, (err, result)=>{
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
 // Sends message to a message group
 app.post("/messages/:groupID" , (req,res) =>{
-    
+
     const groupID = req.params.groupID;
     const userName = req.body.username;
     const message = req.body.message;
-    
+
     //Date and time
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const insertSQL= "INSERT INTO message(group_id, content, sender, send_time) SELECT '" + groupID + "', '" + message +
         "', '" + userName + "', '" + now +"' FROM message_group_member WHERE user_name = '"+ userName +
         "' AND group_ID='"+ groupID + "'" ;
     db.query(insertSQL, (err, result)=>{
-        if(err) {
-            throw err;
+        if (err) {
+            console.log(err);
+            res.send(null);
         }
-        console.log(result);
-        res.send(result);
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -508,9 +620,14 @@ app.get("/posts/:target", (req,res) => {
         "source_user = '"+ username +"' AND target_user = '"+ targetUser +"' AND approved = 1) OR up.user_name in " +
         "(SELECT user_name from user WHERE up.user_name='"+ targetUser +"' AND private_account=0)";
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -520,9 +637,14 @@ app.get("/comments/:postKey", (req,res) => {
 
     const sql = "SELECT DISTINCT pc.message FROM user-post up, post_meta pm, post_comment pc WHERE up.post_id = pm.post_id AND up.post_id = pc.post_id AND pm.key = '" + postkey + "'";
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -532,9 +654,14 @@ app.get("/comments/likes/:message", (req,res) => {
 
     const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '%" + message +"%'";
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -544,9 +671,14 @@ app.get("/moves/done/:userName", (req,res) => {
 
     const sql = "SELECT cm.move_name FROM user u, completed_move cm WHERE u.user_name = cm.user_name AND u.user_name = '" + username + "'";
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
 
@@ -557,8 +689,13 @@ app.get("/message/:messageGroup/:message", (req,res) => {
 
     const sql = "SELECT m.content FROM message_group mg, message m WHERE mg.group_id = m.group_id AND mg.group_name = '" + messageGroup + "' AND m.content LIKE '" + message + "'";
     db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            res.send(result);
+        }
     })
 })
