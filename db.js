@@ -71,9 +71,9 @@ function makeid(length) {
                      "= '0') AND hashed_password = '" + hashed_password + "'";
                  const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
                  db.query(sql, function (err, result) {
-                     if (err) throw err;
+                     if (err) console.log(err);
                      db.query(updateLastLoginSQL, (err1, result1) => {
-                         if (err1) throw err1;
+                         if (err1) console.log(err1);
                          console.log(result1);
                          console.log("updated last online")
                          console.log(result);
