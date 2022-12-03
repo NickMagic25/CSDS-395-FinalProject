@@ -1,7 +1,16 @@
 import "./navbar.css"
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 export default function Navbar() {
+    const history = useHistory();
+
+
+    function logoff() {
+        localStorage.removeItem('token');
+        history.push('/login');
+    }
+
+
     return (
         <div className="navbarContainer">
             <div className="navbarLeft">
@@ -19,6 +28,9 @@ export default function Navbar() {
             <div className="navbarIcons">
                 <img src="/assets/person.jpg" className="navbarImg"/>
             </div>
+            <button onClick={logoff}>
+                Log Off
+            </button>
               
         </div>
     )
