@@ -6,13 +6,15 @@ const jwt = require("jsonwebtoken");
 const registerValidation = require("./validations/registerValidation");
 const loginValidation = require("./validations/loginValidation");
 const keys = require("./config/keys");
-
+const CryptoJS = require('crypto-js');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const port = '5000'
+const port = '5001'
+
+
 
 app.listen(port, () => {
     console.log("Server started on port " + port + "!");
@@ -46,6 +48,14 @@ function makeid(length) {
     return result;
 }
 
+function encrypt(text){
+    return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
+}
+
+function decrypt(data){
+    return CryptoJS.enc.Base64.parse(data).toString(CryptoJS.enc.Utf8);
+}
+
 app.post("/login", (req, res) => {
     const { errors, isValid } = loginValidation(req.body);
     if (!isValid) {
@@ -54,15 +64,15 @@ app.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
+    const hashedItemsSQL = "SELECT hashed_password FROM user WHERE user_name = '" + username + "'";
     db.query(hashedItemsSQL, (error, items)=>{
         console.log(items)
         if(error) throw error;
         if(items[0]!=null) {
             let hashed_password=items[0]["hashed_password"]
             if(bcrypt.compareSync(password,hashed_password)){
-                const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' or mobile_number " +
-                    "= '0') AND hashed_password = '" + hashed_password + "'";
+                const sql = "SELECT * FROM user WHERE user_name = '" + username + "' AND hashed_password = " +
+                    "'" + hashed_password + "'";
                 const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
                 db.query(sql, function (err, result) {
                     if (err) console.log(err);
@@ -96,7 +106,7 @@ app.post("/login", (req, res) => {
                 return res.status(400).json({ password: "incorrect password" });
             }
         }
-        else return res.status(400).json({ password: "email or password does not exist" });;
+        else return res.status(400).json({ password: "email or password does not exist" });
     })
 })
 
@@ -119,8 +129,9 @@ app.post("/register", (req, res) => {
 
     const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
     password = hashString(password);
-    email = hashString(email);
-    console.log(password);
+    email=encrypt(email);
+    console.log(decrypt(email));
+    //console.log(password);
     const sql = "INSERT INTO user (user_name, first_name, last_name, mobile_number, email, hashed_password, " +
         "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + 0 + "','"
         + email + "','" + password + "','" + creationDate + "','" + creationDate + "', NULL)";
@@ -128,8 +139,8 @@ app.post("/register", (req, res) => {
         if (err){
             // handle duplicate names;
             if (err.errno === 1062){
-                console.log("Duplicate entry");
-                return res.status(400).json({ password: "Username email or password already in use" });
+                console.log(err.sqlMessage);
+                return res.status(400).json({ username: err.sqlMessage});
             }
             else {
                 console.log(err);
