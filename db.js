@@ -2,6 +2,11 @@ var express = require('express');
 const mysql = require('mysql');
 const cors = require("cors");
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
+const registerValidation = require("./validations/registerValidation");
+const loginValidation = require("./validations/loginValidation");
+const keys = require("./config/keys");
+
 
 
 const app = express();
@@ -43,45 +48,59 @@ function makeid(length) {
 }
 
 // // login to a user
- app.get("/login", (req, res) =>{
-     const username = req.body.username;
-     const email = req.body.email;
-     const password = req.body.password;
+app.post("/login", (req, res) => {
+    const { errors, isValid } = loginValidation(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+    const username = req.body.username;
+    const password = req.body.password;
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
+    db.query(hashedItemsSQL, (error, items)=>{
+        console.log(items)
+        if(error) throw error;
+        if(items[0]!=null) {
+            let hashed_password=items[0]["hashed_password"]
+            if(bcrypt.compareSync(password,hashed_password)){
+                const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' or mobile_number " +
+                    "= '0') AND hashed_password = '" + hashed_password + "'";
+                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
+                db.query(sql, function (err, result) {
+                    if (err) console.log(err);
+                    db.query(updateLastLoginSQL, (err1, result1) => {
+                        if (err1) console.log(err1);
+                        console.log(result1);
+                        console.log("updated last online")
+                        console.log(result);
+                    })
 
-
-     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
-     const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
-     db.query(hashedItemsSQL, (error, items)=>{
-         console.log(items)
-         if(error) throw error;
-         if(items[0]!=null) {
-             let hashed_password=items[0]["hashed_password"]
-             let hashed_email = items[0]["email"]
-             if(bcrypt.compareSync(password,hashed_password) && bcrypt.compareSync(email, hashed_email)){
-                 console.log("Match!")
-                 const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + hashed_email + "' or mobile_number " +
-                     "= '0') AND hashed_password = '" + hashed_password + "'";
-                 const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
-                 db.query(sql, function (err, result) {
-                     if (err) console.log(err);
-                     db.query(updateLastLoginSQL, (err1, result1) => {
-                         if (err1) console.log(err1);
-                         console.log(result1);
-                         console.log("updated last online")
-                         console.log(result);
-                         res.send(result);
-                     })
-                 })
-             }
-             else{
-                 console.log("Not a match");
-                 res.send("Incorrect password");
-             }
-         }
-         else res.send("username or email does not exist");
-     })
- })
+                    const payload = {
+                        id: result.id,
+                        username: result.username,
+                      };
+                      //sign token
+                      jwt.sign(
+                        payload,
+                        keys.secretOrKey,
+                        { expiresIn: 31556926 },
+                        (err, token) => {
+                          res.json({
+                            success: true,
+                            toke: "Bearer" + token,
+                          });
+                        }
+                      );
+                })
+            }
+            else{
+                console.log("Not a match");
+                return res.status(400).json({ password: "incorrect password" });
+            }
+        }
+        else return res.status(400).json({ password: "email or password does not exist" });;
+    })
+})
 
 // create an account
 app.post("/register", (req, res) => {
@@ -182,6 +201,24 @@ app.get("/workouts/search", (req,res) => {
     })
 })
 
+// searches a username from either a name or creator username
+app.get("/workouts/get", (req,res) => {
+    const user = req.headers['username']
+
+    // commenting out to hard code in a name
+    const sql = "SELECT name, workout_id, day, creator_user_name FROM workout WHERE creator_user_name ='" + user + "'";
+    db.query(sql, (err, result) =>{
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            return res.json({status: 'ok', workouts: result});
+        }
+    })
+})
+
 // searches programs to find a program that meets the user's requirements
 app.get("/programs/search", (req,res) => {
     // default length to 0
@@ -250,11 +287,11 @@ app.post("/workouts/create", (req, res) =>{
     // name of the workout
     const workoutName = req.body.name;
     const username = req.headers['username'];
-    const id = req.body.user
+    const id = req.body.id
     const day = req.body.day;
 
     const sql = "INSERT INTO workout (workout_id, name, creator_user_name, day) VALUES ('" + id + "', ' "
-        + workoutName + "', '" + username + "',"+ day + " )"
+        + workoutName + "', '" + username + "','"+ day + "' )"
     db.query(sql, (err, result) => {
         if (err){
             // handle duplicate names;
@@ -265,10 +302,10 @@ app.post("/workouts/create", (req, res) =>{
             }
             else {
                 console.log(err);
-                res.send(null);
+                return res.json({status: "error"})
             }
         }
-        res.send("Added workout with ID:" + workoutID + " and name " + workoutName);
+        return res.json({status:'ok'})
     })
 })
 
@@ -286,7 +323,6 @@ app.post("/api/addSet", (req,res)=>{
         if (err.errno === 1062){
             console.log(err.sqlMessage);
             // run again with same base params, new setID will be randomly generated
-            addSet();
         }
         else {
             console.log(err);
