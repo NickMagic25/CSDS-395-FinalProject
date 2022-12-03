@@ -2,19 +2,13 @@ var express = require('express');
 const mysql = require('mysql');
 const cors = require("cors");
 const bcrypt = require('bcrypt');
-const jwt = require("jsonwebtoken");
-const registerValidation = require("./validations/registerValidation");
-const loginValidation = require("./validations/loginValidation");
-const keys = require("./config/keys");
-const CryptoJS = require('crypto-js');
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const port = '5001'
-
-
+const port = '5000'
 
 app.listen(port, () => {
     console.log("Server started on port " + port + "!");
@@ -48,79 +42,49 @@ function makeid(length) {
     return result;
 }
 
-function encrypt(text){
-    return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
-}
+// // login to a user
+ app.get("/login", (req, res) =>{
+     const username = req.body.username;
+     const email = req.body.email;
+     const password = req.body.password;
 
-function decrypt(data){
-    return CryptoJS.enc.Base64.parse(data).toString(CryptoJS.enc.Utf8);
-}
 
-app.post("/login", (req, res) => {
-    const { errors, isValid } = loginValidation(req.body);
-    if (!isValid) {
-        return res.status(400).json(errors);
-    }
-    const username = req.body.username;
-    const password = req.body.password;
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-    const hashedItemsSQL = "SELECT hashed_password FROM user WHERE user_name = '" + username + "'";
-    db.query(hashedItemsSQL, (error, items)=>{
-        console.log(items)
-        if(error) throw error;
-        if(items[0]!=null) {
-            let hashed_password=items[0]["hashed_password"]
-            if(bcrypt.compareSync(password,hashed_password)){
-                const sql = "SELECT * FROM user WHERE user_name = '" + username + "' AND hashed_password = " +
-                    "'" + hashed_password + "'";
-                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
-                db.query(sql, function (err, result) {
-                    if (err) console.log(err);
-                    db.query(updateLastLoginSQL, (err1, result1) => {
-                        if (err1) console.log(err1);
-                        console.log(result1);
-                        console.log("updated last online")
-                        console.log(result);
-                    })
+     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-                    const payload = {
-                        id: result.id,
-                        username: result.username,
-                      };
-                      //sign token
-                      jwt.sign(
-                        payload,
-                        keys.secretOrKey,
-                        { expiresIn: 31556926 },
-                        (err, token) => {
-                          res.json({
-                            success: true,
-                            toke: "Bearer" + token,
-                          });
-                        }
-                      );
-                })
-            }
-            else{
-                console.log("Not a match");
-                return res.status(400).json({ password: "incorrect password" });
-            }
-        }
-        else return res.status(400).json({ password: "email or password does not exist" });
-    })
-})
+     const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
+     db.query(hashedItemsSQL, (error, items)=>{
+         console.log(items)
+         if(error) throw error;
+         if(items[0]!=null) {
+             let hashed_password=items[0]["hashed_password"]
+             let hashed_email = items[0]["email"]
+             if(bcrypt.compareSync(password,hashed_password) && bcrypt.compareSync(email, hashed_email)){
+                 console.log("Match!")
+                 const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + hashed_email + "' or mobile_number " +
+                     "= '0') AND hashed_password = '" + hashed_password + "'";
+                 const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
+                 db.query(sql, function (err, result) {
+                     if (err) console.log(err);
+                     db.query(updateLastLoginSQL, (err1, result1) => {
+                         if (err1) console.log(err1);
+                         console.log(result1);
+                         console.log("updated last online")
+                         console.log(result);
+                         res.send(result);
+                     })
+                 })
+             }
+             else{
+                 console.log("Not a match");
+                 res.send("Incorrect password");
+             }
+         }
+         else res.send("username or email does not exist");
+     })
+ })
 
 // create an account
 app.post("/register", (req, res) => {
-    const { errors, isValid } = registerValidation(req.body);
-    if (!isValid) {
-        return res.status(400).json(errors);
-    }
-
-    if (req.body.password.length < 3) {
-        return res.status(400).json({ password: "password is too short" });
-    }
-
     const username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
@@ -128,10 +92,10 @@ app.post("/register", (req, res) => {
     const lastName= req.body.lastName;
 
     const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
     password = hashString(password);
-    email=encrypt(email);
-    console.log(decrypt(email));
-    //console.log(password);
+    email = hashString(email);
+    console.log(password);
     const sql = "INSERT INTO user (user_name, first_name, last_name, mobile_number, email, hashed_password, " +
         "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + 0 + "','"
         + email + "','" + password + "','" + creationDate + "','" + creationDate + "', NULL)";
@@ -139,12 +103,12 @@ app.post("/register", (req, res) => {
         if (err){
             // handle duplicate names;
             if (err.errno === 1062){
-                console.log(err.sqlMessage);
-                return res.status(400).json({ username: err.sqlMessage});
+                console.log("Duplicate entry");
+                res.send("Username email or password already in use")
             }
             else {
                 console.log(err);
-                return res.status(400).json({ password: "Invalid submission" });
+                res.send(null)
             }
         }
         else {
@@ -625,11 +589,11 @@ app.get("/", (req,res)=>{
 
 // Sends message to a message group
 app.post("/messages/:groupID" , (req,res) =>{
-
+    
     const groupID = req.params.groupID;
     const userName = req.body.username;
     const message = req.body.message;
-
+    
     //Date and time
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const insertSQL= "INSERT INTO message(group_id, content, sender, send_time) SELECT '" + groupID + "', '" + message +
@@ -688,7 +652,7 @@ app.get("/comments/:postKey", (req,res) => {
 app.get("/comments/likes/:message", (req,res) => {
     const message = req.params["message"];
 
-    const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '%" + message +"%'";
+    const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '" + message +"'";
     db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
