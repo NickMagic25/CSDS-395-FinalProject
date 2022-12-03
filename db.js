@@ -104,6 +104,15 @@ app.post("/login", (req, res) => {
 
 // create an account
 app.post("/register", (req, res) => {
+    const { errors, isValid } = registerValidation(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+
+    if (req.body.password.length < 3) {
+        return res.status(400).json({ password: "password is too short" });
+    }
+
     const username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
@@ -111,7 +120,6 @@ app.post("/register", (req, res) => {
     const lastName= req.body.lastName;
 
     const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
     password = hashString(password);
     email = hashString(email);
     console.log(password);
@@ -123,11 +131,11 @@ app.post("/register", (req, res) => {
             // handle duplicate names;
             if (err.errno === 1062){
                 console.log("Duplicate entry");
-                res.send("Username email or password already in use")
+                return res.status(400).json({ password: "Username email or password already in use" });
             }
             else {
                 console.log(err);
-                res.send(null)
+                return res.status(400).json({ password: "Invalid submission" });
             }
         }
         else {
