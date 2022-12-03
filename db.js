@@ -652,7 +652,7 @@ app.get("/comments/:postKey", (req,res) => {
 app.get("/comments/likes/:message", (req,res) => {
     const message = req.params["message"];
 
-    const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '%" + message +"%'";
+    const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '" + message +"'";
     db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
