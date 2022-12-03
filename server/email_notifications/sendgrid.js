@@ -3,7 +3,13 @@ const express = require('express');
 const sendgrid = require('@sendgrid/mail');
 const cors = require("cors");
 const send = require("@sendgrid/mail");
+function encrypt(text){
+    return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
+}
 
+function decrypt(data){
+    return CryptoJS.enc.Base64.parse(data).toString(CryptoJS.enc.Utf8);
+}
 
 const app=express();
 app.use(cors());
@@ -64,7 +70,8 @@ app.post("/sendMail", (req,res)=>{
             //console.log(result);
             res.send(true);
             for(const i in result){
-                sendMessage(result[i]["email"], subject, message);
+                let email = decrypt(result[i]['email']);
+                sendMessage(email, subject, message);
             }
         }
     })
