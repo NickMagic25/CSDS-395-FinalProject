@@ -3,12 +3,18 @@ const express = require('express');
 const sendgrid = require('@sendgrid/mail');
 const cors = require("cors");
 const send = require("@sendgrid/mail");
+const CryptoJS = require("crypto-js");
 function encrypt(text){
     return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
 }
 
 function decrypt(data){
+    try{
     return CryptoJS.enc.Base64.parse(data).toString(CryptoJS.enc.Utf8);
+    }
+    catch (err){
+        console.log(err);
+    }
 }
 
 const app=express();
@@ -34,7 +40,7 @@ const db = mysql.createConnection({
 
 function sendMessage(receiver, subject, message){
     console.log(receiver, subject, message);
-    `const msg = {
+    const msg = {
         to: receiver,
         from: 'insta-jacked@mail.com',
         // Change to your verified sender
@@ -48,7 +54,7 @@ function sendMessage(receiver, subject, message){
         })
         .catch((error) => {
             console.error(error)
-        })`
+        })
 }
 
 app.post("/sendMail", (req,res)=>{
