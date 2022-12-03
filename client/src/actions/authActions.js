@@ -76,12 +76,12 @@ export const setCurrentUser = (decoded) => {
 //     );
 // };
 
-// // User loading
-// export const setUserLoading = () => {
-//   return {
-//     type: USER_LOADING,
-//   };
-// };
+// User loading
+export const setUserLoading = () => {
+  return {
+    type: USER_LOADING,
+  };
+};
 // // Log user out
 // export const logoutUser = () => (dispatch) => {
 //   // Remove token from local storage
