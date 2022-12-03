@@ -2,6 +2,10 @@ var express = require('express');
 const mysql = require('mysql');
 const cors = require("cors");
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
+const registerValidation = require("./validations/registerValidation");
+const loginValidation = require("./validations/loginValidation");
+const keys = require("./config/keys");
 
 
 const app = express();
@@ -42,25 +46,22 @@ function makeid(length) {
     return result;
 }
 
-// // login to a user
-app.get("/login", (req, res) =>{
+app.post("/login", (req, res) => {
+    const { errors, isValid } = loginValidation(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
     const username = req.body.username;
-    const email = req.body.email;
     const password = req.body.password;
-
-
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
     const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
     db.query(hashedItemsSQL, (error, items)=>{
         console.log(items)
         if(error) throw error;
         if(items[0]!=null) {
             let hashed_password=items[0]["hashed_password"]
-            let hashed_email = items[0]["email"]
-            if(bcrypt.compareSync(password,hashed_password) && bcrypt.compareSync(email, hashed_email)){
-                console.log("Match!")
-                const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' OR email = '" + hashed_email + "' or mobile_number " +
+            if(bcrypt.compareSync(password,hashed_password)){
+                const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' or mobile_number " +
                     "= '0') AND hashed_password = '" + hashed_password + "'";
                 const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
                 db.query(sql, function (err, result) {
@@ -70,21 +71,46 @@ app.get("/login", (req, res) =>{
                         console.log(result1);
                         console.log("updated last online")
                         console.log(result);
-                        res.send(result);
                     })
+
+                    const payload = {
+                        id: result.id,
+                        username: result.username,
+                      };
+                      //sign token
+                      jwt.sign(
+                        payload,
+                        keys.secretOrKey,
+                        { expiresIn: 31556926 },
+                        (err, token) => {
+                          res.json({
+                            success: true,
+                            toke: "Bearer" + token,
+                          });
+                        }
+                      );
                 })
             }
             else{
                 console.log("Not a match");
-                res.send("Incorrect password");
+                return res.status(400).json({ password: "incorrect password" });
             }
         }
-        else res.send("username or email does not exist");
+        else return res.status(400).json({ password: "email or password does not exist" });;
     })
 })
 
 // create an account
 app.post("/register", (req, res) => {
+    const { errors, isValid } = registerValidation(req.body);
+    if (!isValid) {
+        return res.status(400).json(errors);
+    }
+
+    if (req.body.password.length < 3) {
+        return res.status(400).json({ password: "password is too short" });
+    }
+
     const username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
@@ -92,7 +118,6 @@ app.post("/register", (req, res) => {
     const lastName= req.body.lastName;
 
     const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
     password = hashString(password);
     email = hashString(email);
     console.log(password);
@@ -104,11 +129,11 @@ app.post("/register", (req, res) => {
             // handle duplicate names;
             if (err.errno === 1062){
                 console.log("Duplicate entry");
-                res.send("Username email or password already in use")
+                return res.status(400).json({ password: "Username email or password already in use" });
             }
             else {
                 console.log(err);
-                res.send(null)
+                return res.status(400).json({ password: "Invalid submission" });
             }
         }
         else {
