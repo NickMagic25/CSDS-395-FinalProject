@@ -53,6 +53,18 @@ function isFriendsSQL(self, target){
         + "' AND approved=true";
 }
 
+function runSQL_NoResult(sql,res){
+    db.query(sql, (err,result)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            console.log(result)
+            return res.json({status:'ok'})
+        }
+    })
+}
 
 // from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function makeid(length) {
@@ -353,7 +365,7 @@ app.post("/api/addSet", (req,res)=>{
     const rep_cont=req.body.repCount;
     const repetition=req.body.repetition;
     const set_num=req.body.setNum;
-    const id = req.body.id;
+    const id = req.body.set_id;
 
     const sql= "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num, setID) VALUES ('"
         + workoutID + "', '" + move_name+ "'," + rep_cont + "," + repetition + "," + set_num + ", " + id + ")";
@@ -677,11 +689,11 @@ app.post("/messages/:groupID" , (req,res) =>{
     db.query(insertSQL, (err, result)=>{
         if (err) {
             console.log(err);
-            res.send(null);
+            return res.status(400).json({ password: err.sqlMessage })
         }
         else {
             console.log(result);
-            res.send(result);
+            return res.status(400).json({ password: err.sqlMessage })
         }
     })
 })
@@ -781,16 +793,8 @@ app.post("/api/addFriend", (req,res)=>{
 
     const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT " +
         "'"+ source +"', '"+ target +"','"+ now +"', not user.private_account FROM user WHERE user_name=''";
-    db.query(sql, (err, result)=>{
-        if(err){
-            console.log(err);
-            return res.status(400).json({ password: err.sqlMessage });
-        }
-        else{
-            console.log(result)
-            return res.json({status:'ok'})
-        }
-    })
+
+    return runSQL_NoResult(sql,res);
 })
 
 // accepts friend requests sent to you
@@ -804,16 +808,8 @@ app.post("/api/acceptFriend", (req,res)=>{
 
     const sql="UPDATE user_follow SET approved=true WHERE source_user='"+ source + "' and target_user='"+ target
         +"' AND follow_time='"+ now +"'";
-    db.query(sql, (err, result)=>{
-        if(err){
-            console.log(err);
-            return res.status(400).json({ password: err.sqlMessage });
-        }
-        else{
-            console.log(result)
-            return res.json({status:'ok'})
-        }
-    })
+
+    return runSQL_NoResult(sql,res);
 })
 
 // removes someone you're following or someone following you
@@ -822,16 +818,8 @@ app.delete("/api/removeFriend", (req,res)=>{
     const target=req.body.target;
 
     const sql="DELETE FROM user_follow WHERE source_user='"+ source +"' and target_user='" + target + "'";
-    db.query(sql, (err,result)=>{
-        if(err){
-            console.log(err);
-            return res.status(400).json({ password: err.sqlMessage });
-        }
-        else{
-            console.log(result)
-            return res.json({status:'ok'})
-        }
-    })
+
+    return runSQL_NoResult(sql,res);
 })
 
 app.delete("/api/deletePost",(req,res)=>{
@@ -839,16 +827,8 @@ app.delete("/api/deletePost",(req,res)=>{
     const postID=req.body.postID;
 
     const sql="DELETE FROM user_post WHERE post_id='"+ postID +"' AND user_name='"+ username + "'";
-    db.query(sql, (err,result)=>{
-        if(err){
-            console.log(err);
-            return res.status(400).json({ password: err.sqlMessage });
-        }
-        else{
-            console.log(result)
-            return res.json({status:'ok'})
-        }
-    })
+
+    return runSQL_NoResult(sql,res);
 })
 
 app.delete("/api/deleteComment", (req,res)=>{
@@ -856,14 +836,29 @@ app.delete("/api/deleteComment", (req,res)=>{
     const commentID=req.body.commentID;
 
     const sql="DELETE FROM post_comment WHERE comment_id='"+ commentID+ "' AND user_name='"+ username +"'";
-    db.query(sql, (err,result)=>{
-        if(err){
-            console.log(err);
-            return res.status(400).json({ password: err.sqlMessage });
-        }
-        else{
-            console.log(result)
-            return res.json({status:'ok'})
-        }
-    })
+
+    return runSQL_NoResult(sql,res);
+})
+
+app.delete("/api/deleteWorkout", (req,res)=>{
+    const username=req.headers['username'];
+    const workout_id=req.body.workoutID;
+
+    const sql="DELETE FROM 'set' WHERE workout_id='"+ workout_id +
+        "' AND true IN (SELECT true FROM workout WHERE workout_id= '"+ workout_id +"' AND creator_user_name='"+ username
+    +"'); DELETE FROM workout WHERE workout_id='"+ workout_id +"' AND creator_user_name='"+ username +"'";
+
+    return runSQL_NoResult(sql,res);
+})
+
+app.delete("/api/deleteSet", (req,res)=>{
+    const username=req.headers['username'];
+    const workout_id=req.body.workoutID;
+    const set_id=req.body.setID;
+
+    const sql="DELETE FROM 'ser' WHERE set_id='"+ set_id +"' AND true IN (SELECT true FROM workout WHERE workout_id= '"
+        + workout_id +"' AND creator_user_name='"+ username +"')";
+
+    return runSQL_NoResult(sql,res);
+
 })
