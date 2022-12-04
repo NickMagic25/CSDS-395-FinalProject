@@ -6,7 +6,7 @@ const jwt = require("jsonwebtoken");
 const registerValidation = require("./validations/registerValidation");
 const loginValidation = require("./validations/loginValidation");
 const keys = require("./config/keys");
-
+const CryptoJS = require("crypto-js");
 
 
 const app = express();
@@ -34,6 +34,20 @@ const db = mysql.createConnection({
 function hashString(string){
     return bcrypt.hashSync(string, 10);
 }
+
+function encrypt(text){
+    return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
+}
+
+function decrypt(data){
+    try{
+        return CryptoJS.enc.Base64.parse(data).toString(CryptoJS.enc.Utf8);
+    }
+    catch (err){
+        console.log(err);
+    }
+}
+
 
 // from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function makeid(length) {
@@ -63,9 +77,10 @@ app.post("/login", (req, res) => {
         if(items[0]!=null) {
             let hashed_password=items[0]["hashed_password"]
             if(bcrypt.compareSync(password,hashed_password)){
-                const sql = "SELECT * FROM user WHERE (user_name = '" + username + "' or mobile_number " +
-                    "= '0') AND hashed_password = '" + hashed_password + "'";
-                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '" + username + "'";
+                const sql = "SELECT * FROM user WHERE user_name = '" + username + "' AND hashed_password = '"
+                    + hashed_password + "'";
+                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '"
+                    + username + "'";
                 db.query(sql, function (err, result) {
                     if (err) console.log(err);
                     db.query(updateLastLoginSQL, (err1, result1) => {
@@ -98,7 +113,7 @@ app.post("/login", (req, res) => {
                 return res.status(400).json({ password: "incorrect password" });
             }
         }
-        else return res.status(400).json({ password: "email or password does not exist" });;
+        else return res.status(400).json({ password: "email or password does not exist" });
     })
 })
 
@@ -121,8 +136,9 @@ app.post("/register", (req, res) => {
 
     const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
     password = hashString(password);
-    email = hashString(email);
+    email = encrypt(email);
     console.log(password);
+    console.log(email);
     const sql = "INSERT INTO user (user_name, first_name, last_name, mobile_number, email, hashed_password, " +
         "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + 0 + "','"
         + email + "','" + password + "','" + creationDate + "','" + creationDate + "', NULL)";
@@ -130,8 +146,8 @@ app.post("/register", (req, res) => {
         if (err){
             // handle duplicate names;
             if (err.errno === 1062){
-                console.log("Duplicate entry");
-                return res.status(400).json({ password: "Username email or password already in use" });
+                console.log(err.sqlMessage);
+                return res.status(400).json({ password: err.sqlMessage });
             }
             else {
                 console.log(err);
@@ -148,12 +164,11 @@ app.post("/register", (req, res) => {
 // finds users who userName is following
 // for testing use user1 as username
 // EDIT THIS NICK
-app.get("/user/following/:userName", (req, res) =>{
-    const target = req.params['userName'];
+app.get("/user/following", (req, res) =>{
     const username = req.headers['username'];
 
-    console.log("Current user",userName);
-    const sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = '" + target + "'";
+    console.log("Current user",username);
+    const sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = '" + username + "'";
     db.query(sql,function (err, result){
         if (err) {
             console.log(err);
@@ -313,6 +328,7 @@ app.post("/workouts/create", (req, res) =>{
                 return res.json({status: "error"})
             }
         }
+        console.log(result);
         return res.json({status:'ok'})
     })
 })
@@ -336,8 +352,9 @@ app.post("/api/addSet", (req,res)=>{
             console.log(err);
             res.send(null)
         }
+        console.log(result)
+        res.send(true);
     })
-    res.send(true);
 })
 
 // creates a program
@@ -727,20 +744,102 @@ app.get("/moves/done/:userName", (req,res) => {
     })
 })
 
-// Find a string sent from a given message group
-app.get("/message/:messageGroup/:message", (req,res) => {
-    const messageGroup = req.params["messageGroup"];
-    const message = req.params["message"];
 
-    const sql = "SELECT m.content FROM message_group mg, message m WHERE mg.group_id = m.group_id AND mg.group_name = '" + messageGroup + "' AND m.content LIKE '" + message + "'";
-    db.query(sql, (err, result) => {
-        if (err) {
+// sends a friend request to a user
+// source: user
+// target: other user
+// auto accepts if public account
+app.post("/api/addFriend", (req,res)=>{
+    const target= req.body.target;
+    const source= req.headers['username'];
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT " +
+        "'"+ source +"', '"+ target +"','"+ now +"', not user.private_account FROM user WHERE user_name=''";
+    db.query(sql, (err, result)=>{
+        if(err){
             console.log(err);
-            res.send(null);
+            return res.status(400).json({ password: err.sqlMessage });
         }
-        else {
-            console.log(result);
-            res.send(result);
+        else{
+            console.log(result)
+            return res.json({status:'ok'})
+        }
+    })
+})
+
+// accepts friend requests sent to you
+// target: user
+// source: other user
+app.post("/api/acceptFriend", (req,res)=>{
+    const target=req.headers['username'];
+    const source= req.body.source;
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    const sql="UPDATE user_follow SET approved=true WHERE source_user='"+ source + "' and target_user='"+ target
+        +"' AND follow_time='"+ now +"'";
+    db.query(sql, (err, result)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            console.log(result)
+            return res.json({status:'ok'})
+        }
+    })
+})
+
+// removes someone you're following or someone following you
+app.delete("/api/removeFriend", (req,res)=>{
+    const source=req.body.source;
+    const target=req.body.target;
+
+    const sql="DELETE FROM user_follow WHERE source_user='"+ source +"' and target_user='" + target + "'";
+    db.query(sql, (err,result)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            console.log(result)
+            return res.json({status:'ok'})
+        }
+    })
+})
+
+app.delete("/api/deletePost",(req,res)=>{
+    const username=req.headers['username'];
+    const postID=req.body.postID;
+
+    const sql="DELETE FROM user_post WHERE post_id='"+ postID +"' AND user_name='"+ username + "'";
+    db.query(sql, (err,result)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            console.log(result)
+            return res.json({status:'ok'})
+        }
+    })
+})
+
+app.delete("/api/deleteComment", (req,res)=>{
+    const username=req.headers['username'];
+    const commentID=req.body.commentID;
+
+    const sql="DELETE FROM post_comment WHERE comment_id='"+ commentID+ "' AND user_name='"+ username +"'";
+    db.query(sql, (err,result)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            console.log(result)
+            return res.json({status:'ok'})
         }
     })
 })
