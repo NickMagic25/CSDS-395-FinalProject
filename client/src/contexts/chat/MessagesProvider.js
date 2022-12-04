@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react'
-import Contacts from '../components/Contacts';
+import Contacts from '../../Components/chat/Contacts';
 import LocalStorage from '../hooks/LocalStorage';
 import { useContacts } from './ContactsProvider';
 

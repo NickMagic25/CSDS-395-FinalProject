@@ -22,23 +22,22 @@ export default function OpenMessage() {
         <div className = "d-flex flex-column flex-grow-1">
             <div className="flex-grow-1 overflow-auto">
                 <div className = "h-100 d-flex flex-column align-items-start justy-content-end px-3">
-                    {selectedMessage.messages.map((message, index))
-                    => {
+                    {selectedMessage.messages.map((message, index)=> {
                         return (
                             <div
                                 key={index}
                                 className="my-1 d-flex flex-column"
                             >
                                 <div 
-                                    className={'rounded px-2 py-1 ${message.fromMe ? 'bd-primary text-white'}'}>
+                                    className={`rounded px-2 py-1 ${message.fromMe ? 'bd-primary text-white': 'border'}`}>
                                     {message.text}
                                 </div>
-                                <div>
+                                <div className={`text-muted small $ {message.fromMe ? 'text-right' : ''}`}>
                                     {message.fromMe ? 'You' :message.senderName}
                                 </div>
                             </div>
                         )
-                    }}
+                    })}
                 </div>
             </div>
             <Form onSubmit={handleSubmit} >

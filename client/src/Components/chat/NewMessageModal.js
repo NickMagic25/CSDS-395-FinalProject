@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Modal, Form, Button } from 'react-bootstrap'
-import { useContacts } from '../contexts/ContactsProvider'
-import { useMessages } from '../contexts/MessagesProvider'
+import { useContacts } from '../../contexts/chat/ContactsProvider'
+import { useMessages } from '../../contexts/chat/MessagesProvider'
 
 export default function NewMessageModal({closeModal}) {
     
