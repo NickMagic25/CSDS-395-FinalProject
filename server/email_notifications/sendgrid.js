@@ -57,7 +57,23 @@ function sendMessage(receiver, subject, message){
         })
 }
 
-app.post("/sendMail", (req,res)=>{
+function sqlHandler(sql, message, subject, res){
+    db.query(sql, (err, result)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            for(const i in result){
+                let email = decrypt(result[i]['email']);
+                sendMessage(email, subject, message);
+            }
+        }
+        return res.json({ status:'ok'});
+    })
+}
+
+app.post("/api/message", (req,res)=>{
     const senderUserName = req.body.username;
     const groupID = req.body.groupID;
     const groupName= req.body.groupName;
@@ -67,21 +83,19 @@ app.post("/sendMail", (req,res)=>{
 
     const sql = "SELECT email FROM user WHERE user_name in (SELECT user_name FROM message_group_member WHERE " +
         "group_ID= '"+ groupID +"' and message_group_member.user_name!='"+ senderUserName +"')";
-    db.query(sql, (err, result)=>{
-        if(err){
-            console.log(err);
-            res.send(false);
-        }
-        else{
-            //console.log(result);
-            res.send(true);
-            for(const i in result){
-                let email = decrypt(result[i]['email']);
-                sendMessage(email, subject, message);
-            }
-        }
-    })
+    return sqlHandler(sql, message,subject,res);
+})
 
+app.post("/api/comment", (req,res)=>{
+    const postID=req.body.postID;
+    const comment=req.body.comment;
+    const user=req.body.username;
+
+    const subject="New comment from "+ user;
+    const message=user + " said " + comment;
+
+    const sql="SELECT u.email FROM user u, user_post up WHERE u.user_name=up.user_name AND up.post_id='"+ postID +"'";
+    return sqlHandler(sql,message,subject,res);
 })
 
 
