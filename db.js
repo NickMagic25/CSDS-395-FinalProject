@@ -48,6 +48,11 @@ function decrypt(data){
     }
 }
 
+function isFriendsSQL(self, target){
+    return "SELECT target_user FROM user_follow WHERE source='"+ self + "' AND target_user='"+ target
+        + "' AND approved=true";
+}
+
 
 // from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function makeid(length) {
@@ -163,12 +168,16 @@ app.post("/register", (req, res) => {
 
 // finds users who userName is following
 // for testing use user1 as username
-// EDIT THIS NICK
-app.get("/user/following", (req, res) =>{
-    const username = req.headers['username'];
+app.get("/user/following/:username", (req, res) =>{
+    const self = req.headers['username'];
+    const target=req.params['username']
 
-    console.log("Current user",username);
-    const sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = '" + username + "'";
+    let sql;
+    if(self===target)
+        sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = '" + self + "'";
+    else
+        sql="SELECT target_user FROM user_follow WHERE approved =true AND source_user='"+ target + "' AND '"
+            + target + "' in " + isFriendsSQL(self,target)
     db.query(sql,function (err, result){
         if (err) {
             console.log(err);
@@ -183,14 +192,19 @@ app.get("/user/following", (req, res) =>{
 
 // finds all posts and comments that a user has interacted with
 // for testing use user10
-// EDIT THIS NICK
 app.get("/user/interactions/:userName", (req, res) => {
     const target = req.params['userName'];
     const self = req.headers['username'];
 
-    console.log("Current user:", target);
-    const sql = "SELECT c.post_id FROM post_comment AS c WHERE c.user_name = '" + target
-        + "'; SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + target + "'";
+    let sql;
+    if(target===self)
+        sql="SELECT c.post_id FROM post_comment c WHERE c.user_name ='"+ self+ "'; " +
+            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + self + "'";
+    else
+        sql = "SELECT c.post_id FROM post_comment AS c WHERE c.user_name = '" + target
+            + "' AND '" + target + "' IN "+ isFriendsSQL(self,target) + "; " +
+            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + target + "' AND '"+ target + "' IN "
+            + isFriendsSQL(self,target);
     db.query(sql, function (err, result){
         if (err) {
             console.log(err);
@@ -676,10 +690,15 @@ app.post("/messages/:groupID" , (req,res) =>{
 app.get("/posts/:target", (req,res) => {
     const targetUser = req.params["target"];
     const username = req.headers['username'];
-
-    const sql = "SELECT up.* FROM user_post up WHERE up.user_name in (SELECT target_user from user_follow WHERE " +
-        "source_user = '"+ username +"' AND target_user = '"+ targetUser +"' AND approved = 1) OR up.user_name in " +
-        "(SELECT user_name from user WHERE up.user_name='"+ targetUser +"' AND private_account=0)";
+    let sql;
+    if(targetUser === username){
+        sql="SELECT * FROM user_post WHERE user_name='"+ username +"'";
+    }
+    else{
+        sql = "SELECT up.* FROM user_post up WHERE up.user_name in "+ isFriendsSQL(username, targetUser)
+            + "OR up.user_name in " + "(SELECT user_name from user WHERE up.user_name='"+ targetUser
+            +"' AND private_account=0)";
+    }
     db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
@@ -727,11 +746,16 @@ app.get("/comments/likes/:message", (req,res) => {
 })
 
 // Find moves a given user has done
-// EDIT THIS NICK
 app.get("/moves/done/:userName", (req,res) => {
-    const username = req.params["userName"];
+    const target = req.params["userName"];
+    const self= req.headers['username'];
 
-    const sql = "SELECT cm.move_name FROM user u, completed_move cm WHERE u.user_name = cm.user_name AND u.user_name = '" + username + "'";
+    let sql;
+    if(target===self)
+        sql="SELECT * FROM completed_move WHERE user_name='"+ self +"'";
+    else
+        sql="SELECT * FROM completed_move WHERE user_name='"+ target +"' AND '"+ target + "' in "
+            + isFriendsSQL(self, target);
     db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
