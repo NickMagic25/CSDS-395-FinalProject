@@ -320,24 +320,26 @@ app.post("/workouts/create", (req, res) =>{
 app.post("/api/addSet", (req,res)=>{
     const workoutID=req.body.workoutId;
     const move_name=req.body.moveName;
-    const rep_cont=req.body.repCount;
-    const repetition=req.body.repetition;
+    const rep_cont=req.body.rep;
+    const repetition=req.body.set;
     const set_num=req.body.setNum;
-    const id = req.body.id;
+    const id = req.body.set_id;
 
-    const sql= "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num, setID) VALUES ('"
-        + workoutID + "', '" + move_name+ "'," + rep_cont + "," + repetition + "," + set_num + ", " + id + ")";
+    
+
+    console.log(workoutID);
+    const sql= "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num, set_id) VALUES ('"
+        + workoutID + "', '" + move_name+ "'," + rep_cont + "," + repetition + "," + set_num + ", '" + id + "')";
     db.query(sql, (err, result)=>{
-        if (err.errno === 1062){
-            console.log(err.sqlMessage);
+        if (err){
+            return res.json({status: "error"})
             // run again with same base params, new setID will be randomly generated
         }
         else {
             console.log(err);
-            res.send(null)
+            return res.json({status:'ok'})
         }
     })
-    res.send(true);
 })
 
 // creates a program
@@ -515,11 +517,11 @@ app.get("/workouts/:workoutID", (req,res) =>{
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
-            res.send(null);
+            return res.json({ status: 'error' })
         }
         else {
             console.log(result);
-            res.send(result);
+            return res.json({ status: 'ok', exercises: result })
         }
     })
 })
