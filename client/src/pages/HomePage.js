@@ -15,9 +15,9 @@ function HomePage(){
           <h2 className = {styles.h2Format}>THE GO-TO ONLINE PLATFORM FOR TRACKING AND SHARING YOUR WORKOUT JOURNEY WITH FRIENDS!</h2>
           <form>
             <label>
-               <input type="text" name="name" defaultValue={"Enter Email"}/>
+               <input type="text" name="name" defaultValue={"Enter Email"} className={styles.emailBox}/>
                </label>
-                <input type="submit" value="Sign up" className={styles.btn}/>
+                <input type="submit" value="Sign up" className={styles.submitButton}/>
                 </form>
 
                 <img src = {Social} alt = "Social media graph" className={styles.img}></img>

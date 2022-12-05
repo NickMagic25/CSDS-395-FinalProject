@@ -9,10 +9,6 @@
     margin-top: 150px;
 }
 
-.btn{
-    padding: 10px, 20px; 
-}
-
 .h1Format{
     margin-top: 75px; 
     color: black; 
@@ -26,4 +22,13 @@
     width: 75%;
     color: gray; 
     font-size: 25px;
+}
+
+.emailBox{
+    padding-right: 75px;
+}
+
+.submitButton{
+   position: relative; 
+   right: 30px; 
 }
