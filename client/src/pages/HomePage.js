@@ -1,32 +1,36 @@
-import WorkOutList from "../Components/workouts/WorkOutList";
-import MainNavigation from "../Components/layout/MainNavigation"
+import Navbar from "/Users/varundutta/Desktop/Senior Project/CSDS-395-FinalProject/client/src/Components/navbar/Navbar.jsx";
+import {Container, Col, Row} from 'react-bootstrap'
+import format from './HomePage.css'
+import Deadlift from '../deadlift.png'
+import Social from '../social.jpeg'
 
-const DUMMY_DATA = [
-    {
-      id: 'Workout 1',
-      title: 'Bicep Sesh',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Close_grip_ez_bar_curl_with_barbell_2.svg/1280px-Close_grip_ez_bar_curl_with_barbell_2.svg.png',
-      address: 'Meetupstreet 5, 12345 Meetup City',
-      description:
-        'You cant be sad when you jacked',
-    },
-    {
-      id: 'Workout 2',
-      title: 'Deadlifts',
-      image:
-        'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Romanian-deadlift-1.png/413px-Romanian-deadlift-1.png',
-      address: 'Meetupstreet 5, 12345 Meetup City',
-      description:
-        'Deadlifts are a vibe',
-    },
-  ];
 
 function HomePage(){
-    return <section>
-      <MainNavigation />
-        <h1>Quick Workouts</h1>
-        <WorkOutList workouts = {DUMMY_DATA}></WorkOutList>
+    return <section className="homePage">
+      <Navbar/>
+      <Container>
+        <Row>
+          <Col>
+          <h1 className="mainText">WHERE SHARING YOUR FITNESS JOURNEY BECOMES EASIER</h1>
+          <h2>THE GO-TO ONLINE PLATFORM FOR TRACKING AND SHARING YOUR WORKOUT JOURNEY WITH FRIENDS!</h2>
+          <form>
+            <label>
+               <input type="text" name="name" defaultValue={"Enter Email"}/>
+               </label>
+                <input type="submit" value="Sign up" />
+                </form>
+
+                <img src = {Social} alt = "Social media graph" className="img"></img>
+                
+                
+          </Col>
+          <Col>
+          <img src = {Deadlift} alt ="Deadlift"></img>
+          </Col>
+        </Row>
+      </Container>
+  
+       
     </section>;
 }
 
