@@ -6,7 +6,8 @@ export default function Navbar() {
 
 
     function logoff() {
-        localStorage.removeItem('token');
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('username');
         history.push('/login');
     }
 

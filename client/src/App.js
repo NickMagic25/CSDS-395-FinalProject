@@ -8,7 +8,7 @@ import About from './pages/About';
 import HomePage from './pages/HomePage';
 import Contact from './pages/Contact';
 import Dashboard from './pages/dashboard/Dashboard';
-import Workout from './pages/workout/Workout';
+import Workout from './pages/Workout';
 import { Provider } from "react-redux";
 import store from "./store";
 import "bootstrap/dist/css/bootstrap.min.css";
