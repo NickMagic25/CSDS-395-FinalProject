@@ -381,8 +381,6 @@ app.post("/api/addSet", (req,res)=>{
             console.log(err);
             return res.json({status:'ok'})
         }
-        console.log(result)
-        res.send(true);
     })
 })
 
@@ -621,7 +619,7 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
     db.query(completionSQL, (err, result)=>{
         if(err){
             console.log(err);
-            res.send(null);
+            return res.status(400).json({ password: err.sqlMessage })
         }
         else{
             console.log(result);
@@ -638,16 +636,16 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
                     db.query(updateSQL, (err2, result2)=>{
                         if (err2) {
                             console.log(err2);
-                            res.send(null);
+                            return res.status(400).json({ password: err.sqlMessage });
                         }
                         else {
                             console.log(result2);
-                            res.send(result2);
+                            return res.json({password: "ok"});
                         }
                     })
                 }
                 else
-                    res.send(null);
+                    return res.status(400).json({ password: "ok"})
             })
         }
     })
