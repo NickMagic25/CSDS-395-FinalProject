@@ -205,7 +205,7 @@ export default function Workout() {
                 <Form.Control className="position-relative" type="text" placeholder="Enter Day of Workout" onChange={(e) => setDay(e.target.value)} required/>
             </Form.Group>
             <Button variant="primary" type="submit" className="mb-3">
-            Add Budget
+            Add Custom Workout
             </Button>
   
         </Form>
@@ -234,19 +234,16 @@ export default function Workout() {
 
                             <Form.Group className="mb-3">
                                 <Form.Label>Set Count</Form.Label>
-                                <Form.Control className="position-relative" type="number" placeholder="Enter Budget Allowance" onChange={(e) => setSet(e.target.value)} required/>
+                                <Form.Control className="position-relative" type="number" placeholder="Enter Number of Sets" onChange={(e) => setSet(e.target.value)} required/>
                             </Form.Group>
 
                             <Form.Group className="mb-3">
                                 <Form.Label>Repetition</Form.Label>
-                                <Form.Control className="position-relative" type="number" placeholder="Enter Budget Allowance" onChange={(e) => setRep(e.target.value)} required/>
+                                <Form.Control className="position-relative" type="number" placeholder="Enter Number of Reps" onChange={(e) => setRep(e.target.value)} required/>
                             </Form.Group>
 
                             <Button variant="primary" type="submit">
                                 Add Exercise
-                            </Button>
-                            <Button onClick={test}>
-                                tes
                             </Button>
   
                         </Form>
@@ -272,7 +269,7 @@ export default function Workout() {
                     </Modal.Header>
                     <Modal.Body>
                     {exercises.map(f => (
-                        <li>{f.move_name}</li>
+                        <li>{f.move_name} {f.repetition} x {f.rep_count} reps</li>
                     ))}
                         
                     </Modal.Body>
