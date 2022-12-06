@@ -1,13 +1,46 @@
 import "./write.css";
+import React, {useEffect, useState} from 'react'
+import { v4 as uuidv4 } from 'uuid';
+
 
 export default function Write() {
+    const username = localStorage.getItem('username');
+    const [text, setText] = useState('')
+
+    async function post() {
+        const id = uuidv4();
+        const response = await fetch('http://localhost:5000/api/makePost', {
+            method:'POST',
+            headers: {
+				'Content-Type': 'application/json',
+                'username': username,
+                
+			},
+            body: JSON.stringify({
+                postID: id,
+                text: text
+            }),
+        })
+        const data = await response.json()
+
+        if(data.status === 'error') {
+            console.log('reached')
+        }
+        else {
+            alert('posted')
+            setText('')
+            return;
+        }
+
+    }
+
   return (
     <div className="write">
         <div className="writeWrapper">
             <div className="writeTop">
                 
                 <img src="/assets/person.jpg" alt="" className="shareProfileImg" /> 
-                <input type="text" className="writeInput" placeholder="Say What's Up"/>
+                <input onChange={(e) => setText(e.target.value)} value={text} type="text" className="writeInput" placeholder="Say What's Up"/>
             </div>
             <hr className="shareHr" />
             <div className="writeBottom">
@@ -25,7 +58,7 @@ export default function Write() {
                     </div>
                     
                 </div>
-                <button className="shareButton"> Share </button>
+                <button className="shareButton" onClick={post}> Share </button>
             </div>
         </div>
     </div>

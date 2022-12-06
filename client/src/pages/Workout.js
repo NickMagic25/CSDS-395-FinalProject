@@ -265,7 +265,7 @@ export default function Workout() {
 
                 <Modal show={showWork} onHide={handleCloseW}>
                     <Modal.Header closeButton>
-                    <Modal.Title>Add Exercise</Modal.Title>
+                    <Modal.Title>{d.name}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                     {exercises.map(f => (
