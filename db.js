@@ -693,7 +693,7 @@ app.get("/api/getPosts", (req,res)=>{
     const username=req.headers['username'];
 
     const sql= "SELECT post.* FROM user_post as post WHERE (post.user_name in ("+ findFriendsSQL(username)
-        +") OR post.user_name='"+ username+"')";
+        +") OR post.user_name='"+ username+"') ORDER BY post.created_at DESC";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
