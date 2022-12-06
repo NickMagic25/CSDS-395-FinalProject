@@ -1,10 +1,22 @@
 import "./feed.css";
 import Write from "../write/Write"
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useReducer} from 'react'
 
 
 export default function Feed() {
   const [posts, setPosts] = useState([])
+
+
+  function refresh(newPost) {
+    console.log('reached')
+    if(posts === undefined) {
+      setPosts([newPost])
+    }
+    else {
+        setPosts(prevState => [newPost, ...prevState]);
+    }
+  }
+
 
   async function populateFeed() {
     const req = await fetch('http://localhost:5000/api/getPosts', {
@@ -31,7 +43,7 @@ export default function Feed() {
   return (
     <div className="feed">
         <div className="feedWrapper">
-            <Write />
+            <Write refresh={refresh}/>
         </div>
         {posts.map(d => (
           <li>{d.message} {d.user_name} {d.created_at}</li>

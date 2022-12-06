@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react'
 import { v4 as uuidv4 } from 'uuid';
 
 
-export default function Write() {
+export default function Write({refresh}) {
     const username = localStorage.getItem('username');
     const [text, setText] = useState('')
 
@@ -29,6 +29,8 @@ export default function Write() {
         else {
             alert('posted')
             setText('')
+            const newPost = {post_id: id, user_name: username, message:text}
+            refresh(newPost);
             return;
         }
 
