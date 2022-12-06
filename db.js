@@ -49,7 +49,7 @@ function decrypt(data){
 }
 
 function isFriendsSQL(self, target){
-    return "SELECT target_user FROM user_follow WHERE source='"+ self + "' AND target_user='"+ target
+    return "SELECT target_user FROM user_follow WHERE source_user='"+ self + "' AND target_user='"+ target
         + "' AND approved=true";
 }
 
@@ -387,7 +387,7 @@ app.post("/api/addSet", (req,res)=>{
             // run again with same base params, new setID will be randomly generated
         }
         else {
-            console.log(err);
+            console.log(result);
             return res.json({status:'ok'})
         }
     })
@@ -713,6 +713,25 @@ app.get("/api/getFriendsPosts", (req,res)=>{
         else {
             console.log(result);
             return res.json({status: 'ok', posts: result});
+        }
+    })
+})
+
+app.get("/api/postComments", (req,res)=>{
+    const username=req.headers['username'];
+    const postID=req.body.postID;
+
+    const sql="SELECT c.* FROM post_comment c, user_post up WHERE c.post_id=up.post_id AND up.post_id='"+ postID +"' " +
+        "AND up.user_name in ((SELECT target_user FROM user_follow WHERE source_user='"+ username +"' AND target_user="+
+        "up.user_name AND approved=true) AND '"+ username+ "')";
+    db.query(sql, (err, result) =>{
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            return res.json({status: 'ok', comments: result});
         }
     })
 })
