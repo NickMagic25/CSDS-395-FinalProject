@@ -53,6 +53,11 @@ function isFriendsSQL(self, target){
         + "' AND approved=true";
 }
 
+function doesFollow(self,target){
+    return "SELECT source_user FROM user_follow WHERE source_user='"+self + "' AND target_user='"+ target+"'";
+}
+
+
 function runSQL_NoResult(sql,res){
     db.query(sql, (err,result)=>{
         if(err){
@@ -912,4 +917,25 @@ app.post("/api/makePost", (req, res)=>{
         + username + "', '" + text + "',' " + now() + "')";
 
     return runSQL_NoResult(sql,res);
+})
+
+app.get("/api/getUser/:target",(req,res)=> {
+    const username = req.headers['usernam'];
+    const target = req.params['target'];
+
+    const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name='" + target
+        + "' AND ('" + username + "' IN ("+ doesFollow(username, target) + ") OR '"+ username +"' = '"+ target +"')";
+    db.query(sql, (err, result) =>{
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else if(results[0]===undefined){
+            return res.json({status:'unable to access profile'});
+        }
+        else {
+            console.log(result);
+            return res.json({status: 'ok', profile: result});
+        }
+    })
 })
