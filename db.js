@@ -930,7 +930,7 @@ app.get("/api/getUser/:target",(req,res)=> {
             console.log(err);
             res.send(null);
         }
-        else if(results[0]===undefined){
+        else if(result[0]===undefined){
             return res.json({status:'unable to access profile'});
         }
         else {

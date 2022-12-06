@@ -12,7 +12,7 @@ import Workout from './pages/Workout';
 import { Provider } from "react-redux";
 import store from "./store";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import UserProfile from "./pages/userProfile";
 function App() {
   return (
     <Provider store={store}>
@@ -26,7 +26,7 @@ function App() {
         <Route path="/contact" exact component={Contact}></Route>
         <Route path="/dashboard" exact component={Dashboard}></Route>
         <Route path="/workout" exact component={Workout}></Route>
-       
+        <Route path="/userProfile" exact component={UserProfile}></Route>
       
       </div>
     </Router>
