@@ -917,13 +917,11 @@ app.post("/api/makePost", (req, res)=>{
     return runSQL_NoResult(sql,res);
 })
 
+// gets all public info of a user
 app.get("/api/getUser/:target",(req,res)=> {
-    const username = req.headers['username'];
     const target = req.params['target'];
 
-    const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name='" + target
-        + "' AND ('" + username + "' IN ("+ doesFollow(username, target) + ") OR '"+ username +"' = '"
-        + target +"' OR private_account=false)";
+    const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name='" + target + "'";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
