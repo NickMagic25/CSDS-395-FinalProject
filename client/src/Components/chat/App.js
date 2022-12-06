@@ -11,11 +11,13 @@ function App() {
   const [ID, set_ID] = LocalStorage('ID')
 
   const dashboard = (
-  <ContactsProvider>
+  <SocketProvider ID={ID}>
+    <ContactsProvider>
       <MessagesProvider ID = {ID}>
       <Dashboard ID = {ID} />
       </MessagesProvider>
-  </ContactsProvider>
+    </ContactsProvider>
+  </SocketProvider>
   )
 
   return (
