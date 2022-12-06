@@ -17,6 +17,12 @@ COPY package*.json ./
 
 RUN npm ci --production
 
+FROM node:16-alpine
+
+USER node
+COPY --from=builder /usr/src/app /app
+WORKDIR /app
+
 USER node
 COPY db.js ./
 EXPOSE 5000
