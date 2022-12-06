@@ -1,6 +1,6 @@
 import React, {useContext, useState} from 'react'
 import Contacts from '../../Components/chat/Contacts';
-import LocalStorage from '../hooks/LocalStorage';
+import LocalStorage from '../../hooks/LocalStorage';
 import { useContacts } from './ContactsProvider';
 
 const MessagesContext = React.createContext()
