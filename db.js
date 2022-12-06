@@ -82,6 +82,11 @@ function now(){
     return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function findFrinedsSQL(self){
+    return "SELECT target_user AND DISTINCT '"+ self+"' FROM user_follow WHERE source_user = '"
+        + self + "' AND approved = 1";
+}
+
 // // login to a user
 app.post("/login", (req, res) => {
     const { errors, isValid } = loginValidation(req.body);
@@ -676,6 +681,38 @@ app.get("/", (req,res)=>{
         else {
             console.log(result);
             res.send(result);
+        }
+    })
+})
+
+app.get("/api/findFriendsMoves", (req,res)=>{
+    const username=req.headers['username'];
+
+    const sql="SELECT * FROM completed_move WHERE user_name in (" + findFrinedsSQL(username) + ")";
+    db.query(sql, (err, result) =>{
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            return res.json({status: 'ok', moves: result});
+        }
+    })
+})
+
+app.get("/api/getFriendsPosts", (req,res)=>{
+    const username=req.headers['username'];
+
+    const sql= "SELECT post.* FROM user_post as post WHERE post.user_name in ("+ findFrinedsSQL(username) +")";
+    db.query(sql, (err, result) =>{
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else {
+            console.log(result);
+            return res.json({status: 'ok', posts: result});
         }
     })
 })
