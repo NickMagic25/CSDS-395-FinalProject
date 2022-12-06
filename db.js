@@ -924,13 +924,14 @@ app.get("/api/getUser/:target",(req,res)=> {
     const target = req.params['target'];
 
     const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name='" + target
-        + "' AND ('" + username + "' IN ("+ doesFollow(username, target) + ") OR '"+ username +"' = '"+ target +"' OR private_account=false)";
+        + "' AND ('" + username + "' IN ("+ doesFollow(username, target) + ") OR '"+ username +"' = '"
+        + target +"' OR private_account=false) ORDER BY post.created_at DESC ";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
             res.send(null);
         }
-        else if(results[0]===undefined){
+        else if(result[0]===undefined){
             return res.json({status:'unable to access profile'});
         }
         else {
