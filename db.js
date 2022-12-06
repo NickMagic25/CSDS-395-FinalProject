@@ -78,6 +78,10 @@ function makeid(length) {
     return result;
 }
 
+function now(){
+    return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
+
 // // login to a user
 app.post("/login", (req, res) => {
     const { errors, isValid } = loginValidation(req.body);
@@ -656,7 +660,8 @@ app.get("/", (req,res)=>{
     const username = req.headers['username'];
 
 
-    const findFriendsSQL= "SELECT target_user FROM user_follow WHERE source_user = '" + username + "' AND approved = 1";
+    const findFriendsSQL= "SELECT target_user AND DISTINCT '"+ username+"' FROM user_follow WHERE source_user = '"
+        + username + "' AND approved = 1";
     const friendsMovesSQL= "SELECT * FROM completed_move WHERE user_name in (" + findFriendsSQL + ")";
     const friendWorkoutsSQL= "SELECT * FROM completed_workout WHERE user_name in (" + findFriendsSQL + ")";
     const postSQL = "SELECT post.* FROM user_post as post WHERE post.user_name in ("+ findFriendsSQL +")";
@@ -863,3 +868,16 @@ app.delete("/api/deleteSet", (req,res)=>{
     return runSQL_NoResult(sql,res);
 
 })
+
+app.post("/api/makePost", (err, res)=>{
+    const username=req.headers['username'];
+    const post_id=req.body.postID;
+    const text=req.body.text;
+
+    const sql= "INSERT INTO user_post (post_id, user_name, message, created_at) VALUES ('"+ post_id + "', '"
+        + username + "', '" + text + "',' " + now() + "'))";
+
+    return runSQL_NoResult(sql,res);
+})
+
+
