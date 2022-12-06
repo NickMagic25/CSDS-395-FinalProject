@@ -492,18 +492,16 @@ app.get("/messages/:groupID", (req,res) =>{
     const username = req.headers['username'];
 
     const membersSQl="SELECT user_name FROM message_group_member WHERE group_ID = '" + groupID + "'";
-    const messageSQL = "SELECT content, sender, send_time FROM message WHERE group_id = '" + groupID + "' AND '"
-        + username + "' in (" + membersSQl + ")";
-    db.query(messageSQL, (err, result) =>{
-        if(err){
+    const sql = "SELECT content, sender, send_time FROM message WHERE group_id = '" + groupID + "' AND '"
+        + username + "' in (" + membersSQl + ") ORDER BY send_time DESC";
+    db.query(sql, (err, result) =>{
+        if (err) {
             console.log(err);
-            res.send(null);
+            return res.status(400).json({ password: err.sqlMessage });
         }
-        else if(result[0] === undefined)
-            res.send("Group does not exists or not a member of group");
-        else{
+        else {
             console.log(result);
-            res.send(result);
+            return res.json({status: 'ok', messages: result});
         }
     })
 })
@@ -716,7 +714,7 @@ app.get("/api/postComments", (req,res)=>{
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
-            res.send(null);
+            return res.status(400).json({ password: err.sqlMessage });
         }
         else {
             console.log(result);
@@ -742,7 +740,7 @@ app.post("/messages/:groupID" , (req,res) =>{
         }
         else {
             console.log(result);
-            return res.status(400).json({ password: err.sqlMessage })
+            return res.json({ status:'sent' });
         }
     })
 })
