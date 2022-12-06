@@ -83,7 +83,7 @@ function now(){
 }
 
 function findFriendsSQL(self){
-    return "SELECT target_user AND DISTINCT '"+ self+"' FROM user_follow WHERE source_user = '"
+    return "SELECT target_user FROM user_follow WHERE source_user = '"
         + self + "' AND approved = 1";
 }
 
