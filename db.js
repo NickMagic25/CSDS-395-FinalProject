@@ -920,11 +920,11 @@ app.post("/api/makePost", (req, res)=>{
 })
 
 app.get("/api/getUser/:target",(req,res)=> {
-    const username = req.headers['usernam'];
+    const username = req.headers['username'];
     const target = req.params['target'];
 
     const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name='" + target
-        + "' AND ('" + username + "' IN ("+ doesFollow(username, target) + ") OR '"+ username +"' = '"+ target +"')";
+        + "' AND ('" + username + "' IN ("+ doesFollow(username, target) + ") OR '"+ username +"' = '"+ target +"' OR private_account=false)";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -938,4 +938,19 @@ app.get("/api/getUser/:target",(req,res)=> {
             return res.json({status: 'ok', profile: result});
         }
     })
+})
+
+// makes a user's account private
+app.post("/api/setPrivateAccount", (req,res)=>{
+    const username=req.headers['username'];
+
+    const sql="UPDATE user SET private_account=true WHERE user_name='"+ username +"'";
+    return runSQL_NoResult(sql,res);
+})
+
+app.post("/api/setPublicAccount",(req,res)=>{
+    const username=req.headers['username'];
+
+    const sql="UPDATE user SET private_account=false WHERE user_name='"+ username +"'";
+    return runSQL_NoResult(sql,res);
 })
