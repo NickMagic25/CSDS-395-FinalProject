@@ -701,10 +701,11 @@ app.get("/api/findFriendsMoves", (req,res)=>{
     })
 })
 
-app.get("/api/getFriendsPosts", (req,res)=>{
+app.get("/api/getPosts", (req,res)=>{
     const username=req.headers['username'];
 
-    const sql= "SELECT post.* FROM user_post as post WHERE post.user_name in ("+ findFrinedsSQL(username) +")";
+    const sql= "SELECT post.* FROM user_post as post WHERE post.user_name in ("+ findFrinedsSQL(username)
+        +" AND '"+ username+"')";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
