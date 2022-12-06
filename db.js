@@ -67,7 +67,7 @@ function runSQL_NoResult(sql,res){
 }
 
 // from https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
-function makeid(length) {
+function makeID(length) {
     var result           = '';
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
@@ -82,8 +82,8 @@ function now(){
     return new Date().toISOString().slice(0, 19).replace('T', ' ');
 }
 
-function findFrinedsSQL(self){
-    return "SELECT target_user FROM user_follow WHERE source_user = '"
+function findFriendsSQL(self){
+    return "SELECT target_user AND DISTINCT '"+ self+"' FROM user_follow WHERE source_user = '"
         + self + "' AND approved = 1";
 }
 
@@ -95,7 +95,6 @@ app.post("/login", (req, res) => {
     }
     const username = req.body.username;
     const password = req.body.password;
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
     db.query(hashedItemsSQL, (error, items)=>{
         console.log(items)
@@ -105,7 +104,7 @@ app.post("/login", (req, res) => {
             if(bcrypt.compareSync(password,hashed_password)){
                 const sql = "SELECT * FROM user WHERE user_name = '" + username + "' AND hashed_password = '"
                     + hashed_password + "'";
-                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now + "' WHERE user_name = '"
+                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now() + "' WHERE user_name = '"
                     + username + "'";
                 db.query(sql, function (err, result) {
                     if (err) console.log(err);
@@ -402,7 +401,7 @@ app.post("/programs/create", (req, res) =>{
     // workoutList in format [id1, id2, id3 ...., idN] where the day of is the index (first index is 1)
 
     function makeProgram(){
-        const programID = makeid(20);
+        const programID = makeID(20);
         const sql = "INSERT INTO program (program_id, program_name, program_creator, description) VALUES ('"
             + programID + "', '" + programName + "', '" + creator + "', '"+ description + "')"
         db.query(sql, (err, result) =>{
@@ -443,15 +442,14 @@ app.post("/programs/create", (req, res) =>{
 app.post("/messages/creategroup", (req, res) =>{
     const username = req.body.username;
     const name = req.body.name;
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
     // function to run again in case of duplicate user ID
     function makeMessageGroup(){
-        const id = makeid(20)
+        const id = makeID(20)
         const sql = "INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES ('" + id + "', '"
-            + name + "', '" + username + "', '" + now + "')"
+            + name + "', '" + username + "', '" + now() + "')"
         const adminSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES " +
-            "('" + id + "', '" + username + "', '" + now + "', 3)";
+            "('" + id + "', '" + username + "', '" + now() + "', 3)";
         db.query(sql, (err, result) =>{
             if(err){
                 if (err.errno === 1062){
@@ -510,7 +508,6 @@ app.post("/programs/start/:programID", (req,res) =>{
     const programID = req.params["programID"];
     const username = req.headers['username'];
 
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     // check to see if a user is already doing the program
     const checkSQL = "SELECT * from completing_program WHERE program_id = '"
         + programID + "' AND user_name = '" + username + "' and completed = 0";
@@ -522,7 +519,7 @@ app.post("/programs/start/:programID", (req,res) =>{
         // if user is not currently doing that program, start the program
         else if (result1[0]=== undefined){
             const sql = "INSERT INTO completing_program (program_id, user_name, date_started) VALUES ('"
-                + programID + "','"+ username + "','" + now + "')";
+                + programID + "','"+ username + "','" + now() + "')";
             db.query(sql, (err, result)=>{
                 if (err) {
                     console.log(err);
@@ -578,17 +575,14 @@ app.get("/workouts/:workoutID", (req,res) =>{
 })
 
 // adds a user to a message group if above admin level 2
-app.post("/messages/addmember/:groupID", (req,res) =>{
+app.post("/api/messages/addmember/:groupID", (req,res) =>{
     const groupID = req.params['groupID'];
-
-    // hard code in for now
-    const username= req.body.username;
+    const username= req.header['username'];
     const targetUser = req.body.targetuser
 
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const checkSQL="SELECT * FROM message_group_member WHERE group_id = '" + groupID + "' AND user_name='" + targetUser + "'";
     const insertSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date) " +
-        "SELECT '" + groupID + "', '" + targetUser + "', '" + now + "' FROM message_group_member " +
+        "SELECT '" + groupID + "', '" + targetUser + "', '" + now() + "' FROM message_group_member " +
         "WHERE '"+ username + "' = user_name AND group_ID = '" + groupID + "' AND admin_level>=2";
     // check to see if user is already in the group
     db.query(checkSQL, (err, result)=>{
@@ -617,10 +611,9 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
     const workoutID = req.params["workoutID"];
     const username = req.headers['username'];
 
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     // SQL for completing the workout
     const completionSQL="INSERT INTO completed_workout (workout_id, user_name, date_completed) VALUES ('" + workoutID
-        + "', '" + username + "', '" + now + "')";
+        + "', '" + username + "', '" + now() + "')";
     // SQL for finding if the workout is a part of a program the USER is doing and if they're doing it on the day of the program
     const programIDSQL = "SELECT c.program_id FROM completing_program as c, program_contains as p WHERE " +
         "c.program_id = p.program_id AND c.user_name = '"+ username +"' AND p.workout_id = '"+ workoutID+ "' " +
@@ -660,35 +653,25 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
     })
 })
 
-// Gets everything for the landing page
-app.get("/", (req,res)=>{
-    const username = req.headers['username'];
+app.get("/api/findFrinedsWorkouts", (req,res)=>{
+    const username=req.headers['username'];
 
-
-    const findFriendsSQL= "SELECT target_user AND DISTINCT '"+ username+"' FROM user_follow WHERE source_user = '"
-        + username + "' AND approved = 1";
-    const friendsMovesSQL= "SELECT * FROM completed_move WHERE user_name in (" + findFriendsSQL + ")";
-    const friendWorkoutsSQL= "SELECT * FROM completed_workout WHERE user_name in (" + findFriendsSQL + ")";
-    const postSQL = "SELECT post.* FROM user_post as post WHERE post.user_name in ("+ findFriendsSQL +")";
-    const commentSQL = "SELECT comment.* FROM post_comment as comment,("+ postSQL + ") as p WHERE " +
-        "p.post_id = comment.post_id";
-
-    db.query(friendsMovesSQL + ";" + friendWorkoutsSQL+ ";" +postSQL+ ";" + commentSQL, (err, result)=>{
+    const sql="SELECT * FROM completed_workout WHERE (user_name in ("+ findFriendsSQL(username)+ ") OR user_name='"+ username +"')";
+    db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
             res.send(null);
         }
         else {
             console.log(result);
-            res.send(result);
+            return res.json({status: 'ok', workouts: result});
         }
     })
 })
-
 app.get("/api/findFriendsMoves", (req,res)=>{
     const username=req.headers['username'];
 
-    const sql="SELECT * FROM completed_move WHERE user_name in ((" + findFrinedsSQL(username) + ") AND "+ username+")";
+    const sql="SELECT * FROM completed_move WHERE (user_name in (" + findFriendsSQL(username) + ") OR user_name='"+ username +"')";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -704,8 +687,8 @@ app.get("/api/findFriendsMoves", (req,res)=>{
 app.get("/api/getPosts", (req,res)=>{
     const username=req.headers['username'];
 
-    const sql= "SELECT post.* FROM user_post as post WHERE post.user_name in ("+ findFrinedsSQL(username)
-        +") OR post.user_name= '"+ username+"'";
+    const sql= "SELECT post.* FROM user_post as post WHERE (post.user_name in ("+ findFriendsSQL(username)
+        +") OR post.user_name='"+ username+"')";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -723,8 +706,8 @@ app.get("/api/postComments", (req,res)=>{
     const postID=req.body.postID;
 
     const sql="SELECT c.* FROM post_comment c, user_post up WHERE c.post_id=up.post_id AND up.post_id='"+ postID +"' " +
-        "AND up.user_name in ((SELECT target_user FROM user_follow WHERE source_user='"+ username +"' AND target_user="+
-        "up.user_name AND approved=true) AND '"+ username+ "')";
+        "AND (up.user_name in (SELECT target_user FROM user_follow WHERE source_user='"+ username +"' AND target_user="+
+        "up.user_name AND approved=true) OR up.user_name= '"+ username+ "')";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -743,11 +726,9 @@ app.post("/messages/:groupID" , (req,res) =>{
     const groupID = req.params.groupID;
     const userName = req.headers['username'];
     const message = req.body.message;
-    
-    //Date and time
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
     const insertSQL= "INSERT INTO message(group_id, content, sender, send_time) SELECT '" + groupID + "', '" + message +
-        "', '" + userName + "', '" + now +"' FROM message_group_member WHERE user_name = '"+ userName +
+        "', '" + userName + "', '" + now() +"' FROM message_group_member WHERE user_name = '"+ userName +
         "' AND group_ID='"+ groupID + "'" ;
     db.query(insertSQL, (err, result)=>{
         if (err) {
@@ -852,10 +833,8 @@ app.post("/api/addFriend", (req,res)=>{
     const target= req.body.target;
     const source= req.headers['username'];
 
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
     const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT " +
-        "'"+ source +"', '"+ target +"','"+ now +"', not user.private_account FROM user WHERE user_name=''";
+        "'"+ source +"', '"+ target +"','"+ now() +"', not user.private_account FROM user WHERE user_name=''";
 
     return runSQL_NoResult(sql,res);
 })
@@ -867,10 +846,8 @@ app.post("/api/acceptFriend", (req,res)=>{
     const target=req.headers['username'];
     const source= req.body.source;
 
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
-
     const sql="UPDATE user_follow SET approved=true WHERE source_user='"+ source + "' and target_user='"+ target
-        +"' AND follow_time='"+ now +"'";
+        +"' AND follow_time='"+ now() +"'";
 
     return runSQL_NoResult(sql,res);
 })
@@ -936,5 +913,3 @@ app.post("/api/makePost", (req, res)=>{
 
     return runSQL_NoResult(sql,res);
 })
-
-

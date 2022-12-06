@@ -13,7 +13,6 @@ RUN npm ci --production
 
 USER node
 COPY db.js ./
-COPY API_helper.js ./
 
 FROM node:16-alpine
 
