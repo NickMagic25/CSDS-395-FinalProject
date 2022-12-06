@@ -11,6 +11,10 @@ export default function Navbar() {
         history.push('/login');
     }
 
+    function viewProfile() {
+        history.push('/userProfile');
+    }
+
 
     return (
         <div className="navbarContainer">
@@ -27,7 +31,9 @@ export default function Navbar() {
                 <span className="navbarLink">Friends</span>
             </div>
             <div className="navbarIcons">
-                <img src="/assets/person.jpg" className="navbarImg"/>
+                <form onSubmit={viewProfile}>
+                    <button><img style={{"height":"30px", "width": "30px"}} src ="/assets/person.jpg"/></button>
+                </form>
             </div>
             <button onClick={logoff}>
                 Log Off

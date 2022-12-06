@@ -11,7 +11,7 @@ export default function UserProfile() {
   const [userName, setUserName] = useState("")
 
   async function getProfileInfo() {
-    const req = await fetch('http://localhost:5000/api/getUser/bjin', {
+    const req = await fetch('http://localhost:5000/api/getUser/' + localStorage.getItem('username'), {
 			headers: {
 				'username': localStorage.getItem('username'),
 			},
