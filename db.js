@@ -566,9 +566,10 @@ app.get("/today", (req, res) =>{
 // find all sets in a workout
 app.get("/workouts/:workoutID", (req,res) =>{
     const workoutID = req.params["workoutID"];
-    const sql = "SELECT set_num, move_name, rep_count, repetition FROM `set` WHERE workout_id = " + db.escape(workoutID);
+    const sql = "SELECT set_num, move_name, rep_count, repetition, name FROM `set`, workout WHERE workout_id = " + db.escape(workoutID)+";";
+    const nameSQL="SELECT name FROM workout WHERE workout_id="+db.escape(workoutID);
 
-    db.query(sql, (err, result) =>{
+    db.query(sql+nameSQL, (err, result) =>{
         if (err) {
             console.log(err);
             return res.json({ status: 'error' })

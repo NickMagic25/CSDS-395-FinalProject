@@ -6,9 +6,12 @@ spec:
   containers:
     - name: server
       image: insta-jacked
+      imagePullPolicy: Never
       ports:
         - containerPort: 5000
     - name: email-notis
       image: ij-sendgrid
+      imagePullPolicy: Never
       ports:
         - containerPort: 6000
+  restartPolicy: Never
