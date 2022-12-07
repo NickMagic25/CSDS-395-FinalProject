@@ -1,5 +1,5 @@
 import React, {useContext} from 'react'
-import LocalStorage from '../../hooks/LocalStorage';
+import LocalStorage from '../hooks/LocalStorage';
 
 const ContactsContext = React.createContext()
 

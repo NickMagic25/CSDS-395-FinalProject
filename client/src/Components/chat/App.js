@@ -1,28 +1,32 @@
 import React from 'react'
 import Login from './Login'
-import LocalStorage from '../hooks/LocalStorage';
+import LocalStorage from '../../hooks/LocalStorage';
 import Dashboard from './Dashboard';
-import {ContactsProvider} from '../contexts/ContactsProvider';
+import {ContactsProvider} from '../../contexts/chat/ContactsProvider';
 //import SideBar from './components/SideBar';
-import "bootstrap/dist/css/bootstrap.min.css";
-import { MessagesProvider } from '../contexts/MessagesProvider';
+// import "bootstrap/dist/css/bootstrap.min.css";
+import { MessagesProvider } from '../../contexts/chat/MessagesProvider';
+import {SocketProvider} from '../../contexts/chat/SocketProvider'
 
 function App() {
-  const [ID, set_ID] = LocalStorage('ID')
+  const [id, setId] = LocalStorage('id')
 
   const dashboard = (
-  <SocketProvider ID={ID}>
+  <SocketProvider id={id}>
     <ContactsProvider>
-      <MessagesProvider ID = {ID}>
-      <Dashboard ID = {ID} />
+      <MessagesProvider id={id}>
+      <Dashboard id={id} />
       </MessagesProvider>
     </ContactsProvider>
   </SocketProvider>
   )
 
   return (
-    ID ? dashboard : <Login onIDSubmit = {set_ID} />
+    id != 'undefined' && id != null ? dashboard : 
+   <Login onIdSubmit={setId} />
+   
   )
 }
 
 export default App;
+

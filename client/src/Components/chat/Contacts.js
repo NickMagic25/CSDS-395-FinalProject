@@ -3,13 +3,13 @@ import { useContacts } from '../../contexts/chat/ContactsProvider'
 import { ListGroup } from "react-bootstrap"
 
 export default function Contacts() {
-    const { Contacts } = useContacts()
+    const { contacts } = useContacts()
 
     return (
-        <ListGroup varient = "flush">
-            {Contacts.map(contact => (
-                <ListGroup.Item k = {contact.ID}>
-                    {contact.name}
+        <ListGroup variant = "flush">
+            {contacts && contacts.map(contact => (
+                <ListGroup.Item key = {contact.ID}>
+                    {contact.Name}
                 </ListGroup.Item>
             ))}
         </ListGroup>

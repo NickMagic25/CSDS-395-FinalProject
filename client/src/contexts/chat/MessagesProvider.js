@@ -1,7 +1,8 @@
-import React, {useContext, useState} from 'react'
-import Contacts from '../../Components/chat/Contacts';
-import LocalStorage from '../../hooks/LocalStorage';
+import React, {useContext, useEffect, useState, useCallback} from 'react'
+//import Contacts from '../components/Contacts';
+import LocalStorage from '../hooks/LocalStorage';
 import { useContacts } from './ContactsProvider';
+import { useSocket } from './SocketProvider';
 
 const MessagesContext = React.createContext()
 
@@ -9,21 +10,21 @@ export function useMessages() {
     return useContext(MessagesContext)
 }
 
-export function MessagesProvider({ ID, children }) {
+export function MessagesProvider({ id, children }) {
 
     const [messages, setMessages] =  LocalStorage('messages', [])
-
-    const {Contacts} = useContacts()
-
     const [selectedMessageIndex, setSelectedMessageIndex] = useState(0)
+    const {contacts} = useContacts()
 
-    function saveMessage(group_Members){
-        setMessages(prevMessages =>{
+    const socket = useSocket()
+
+    function createMessage(group_Members){
+       setMessages(prevMessages =>{
             return [...prevMessages, {group_Members, messages: [] }]
         })
     }
 
-    function addTextToMessage({gorup_Members, text, sender}) {
+    const addTextToMessage = useCallback(({group_Members, text, sender}) => {
         setMessages(prevMessages => {
             let madeChange = false
             
@@ -42,7 +43,7 @@ export function MessagesProvider({ ID, children }) {
             })
 
             if (madeChange) {
-
+                return newMessages
             } else {
                 return [
                     ...prevMessages,
@@ -50,15 +51,22 @@ export function MessagesProvider({ ID, children }) {
                 ]
             }
         })
-    }
+    }, [setMessages] )
+
+    useEffect(() => {
+        if (socket == null) return
+        socket.on('receive-message', addTextToMessage)
+        return () => socket.off('receive-message')
+    }, [socket, addTextToMessage])
 
     function sendText(group_Members, text){
-        addTextToMessage({group_Members, text, sender: ID})
+        socket.emit('send-message', {group_Members, text})
+        addTextToMessage({group_Members, text, sender: id})
     }
 
-    const formattedMessages = messages.map(messages, index => {
-        const group_Members = message.group_Members.mpa(group_Members => {
-            const contact = Contacts.find(contact => {
+    const formattedMessages = messages.map((message, index) => {
+        const group_Members = message.group_Members.map(group_Member => {
+            const contact = contacts.find(contact => {
                 return contact.id === group_Member
             })
             const name = (contact && contact.name) || group_Member
@@ -66,11 +74,11 @@ export function MessagesProvider({ ID, children }) {
         })
         
         const messages = message.messages.map(message => {
-            const contact = Contacts.find(contact => {
+            const contact = contacts.find(contact => {
                 return contact.id === message.sender
             })
             const name = (contact && contact.name) || message.sender
-            const fromMe = ID === message.sender
+            const fromMe = id === message.sender
             return {...message, senderName: name, fromMe}
         })
 
@@ -78,16 +86,16 @@ export function MessagesProvider({ ID, children }) {
         return {...message, messages, group_Members, selected}
     })
 
-    const output = {
+    const value = {
+        createMessage,
         messages: formattedMessages,
         selectedMessage: formattedMessages[selectedMessageIndex],
         sendText,
-        selectMessageIndex : setSelectedMessageIndex,
-        saveMessage
+        selectMessageIndex : setSelectedMessageIndex
     }
 
     return (
-        <MessagesContext.Provider value ={{output}}>
+        <MessagesContext.Provider value ={{value}}>
             {children}
         </MessagesContext.Provider>
     )

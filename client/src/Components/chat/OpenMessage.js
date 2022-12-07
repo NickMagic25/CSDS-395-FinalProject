@@ -1,12 +1,12 @@
 import React, {useState, useCallback} from 'react'
 import {Form, InputGroup, Button} from 'react-bootstrap'
-import { useMessages } from '../contexts/MessagesProvider'
+import { useMessages } from '../../contexts/chat/MessagesProvider'
 
 export default function OpenMessage() {
     
     const [text, setText] = useState('')
 
-    const {sendMessage} = useMessages()
+    const {sendMessage, selectedMessage} = useMessages()
 
 
     const setRef = useCallback(node => {
@@ -18,8 +18,8 @@ export default function OpenMessage() {
     function handleSubmit(a) {
         a.preventDefault()
 
-        sendMessgae(
-            selectedMessage.group_Members.map(m => m.ID),
+        sendMessage(
+            selectedMessage.group_Members.map(m => m.id),
             text
         )
         setText('')
@@ -28,20 +28,20 @@ export default function OpenMessage() {
     return (
         <div className = "d-flex flex-column flex-grow-1">
             <div className="flex-grow-1 overflow-auto">
-                <div className = "d-flex flex-column align-items-start justy-content-end px-3">
+                <div className = "d-flex flex-column align-items-start justify-content-end px-3">
                     {selectedMessage.messages.map((message, index)=> {
                         const lastText = selectedMessage.messages.length - 1 === index
                         return (
                             <div
                                 ref={lastText ? setRef: null}
                                 key={index}
-                                className={`my-1 d-flex flex-column $ {message.fromMe ? 'align-self-start align-items-start' : 'align-items-start'} `}
+                                className={`my-1 d-flex flex-column ${message.fromMe ? 'align-self-start align-items-start' : 'align-items-start'} `}
                             >
                                 <div 
                                     className={`rounded px-2 py-1 ${message.fromMe ? 'bd-primary text-white': 'border'}`}>
                                     {message.text}
                                 </div>
-                                <div className={`text-muted small $ {message.fromMe ? 'text-right' : ''}`}>
+                                <div className={`text-muted small ${message.fromMe ? 'text-right' : ''}`}>
                                     {message.fromMe ? 'You' :message.senderName}
                                 </div>
                             </div>

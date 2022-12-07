@@ -1,21 +1,23 @@
 import React from 'react'
 import { ListGroup } from 'react-bootstrap'
 import { useMessages } from '../../contexts/chat/MessagesProvider'
+//import { useState} from 'react'
 
 export default function Messages() {
     
-    const {messages, selectMessageIndex} = useMessages()
-
+    const {messages, selectMessageIndex} =  useMessages()
+   
+console.log(messages)
     return (
-        <ListGroup varient = "flush">
-            {messages.map((message, index) => (
+        <ListGroup variant = "flush">
+            {messages && messages.map((message, index) => (
                 <ListGroup.Item 
-                k = {index}
-                action
-                onClick = {() => selectMessageIndex(index)}
-                active={message.selected}
+                    key = {index}
+                    action
+                    onClick = {() => selectMessageIndex(index)}
+                    active={message.selected}
                 >
-                    {message.group_Members.map(m => m.name).join(', ')}
+                    {message.group_Members.map(r => r.name).join(', ')}
                 </ListGroup.Item>
             ))}
         </ListGroup>

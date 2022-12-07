@@ -8,7 +8,7 @@ import NewContactModal from './NewContactModal'
 const messages_Key = 'messages'
 const contacts_Key = 'contacts'
 
-export default function SideBar({ ID }) {
+export default function SideBar({ id }) {
     const [activeKey, setActiveKey] = useState(messages_Key)
     const messagesOpen = activeKey === messages_Key
     const [openModal, setOpenModal] = useState(false)
@@ -28,7 +28,7 @@ export default function SideBar({ ID }) {
                         <Nav.Link eventKey = {contacts_Key}>Contacts</Nav.Link>
                     </Nav.Item>
                 </Nav>
-                <Tab.Content className = "border-right overfloe-auto flex-grow-1">
+                <Tab.Content className = "border-right overflow-auto flex-grow-1">
                     <Tab.Pane eventKey={messages_Key}>
                         <Messages />
                     </Tab.Pane>
@@ -37,7 +37,7 @@ export default function SideBar({ ID }) {
                     </Tab.Pane>
                 </Tab.Content>
                 <div className = "p-2 border-top border-right small">
-                    Personal ID: <span className = "text-muted">{ID}</span>
+                    Personal ID: <span className = "text-muted">{id}</span>
                 </div>
                 <Button onClick = {() => setOpenModal(true)} className = "rounded-0">
                     New {messagesOpen ? 'Message' : 'Contact'}
