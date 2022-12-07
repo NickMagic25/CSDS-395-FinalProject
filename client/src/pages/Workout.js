@@ -41,8 +41,9 @@ export default function Workout() {
         console.log(eWork);
     }
 
-    async function showWorkouts(id) {
+    async function showWorkouts(id, name) {
         setWorkid(id)
+        setWorkName(name)
         const req = await fetch('http://localhost:5000/workouts/' + id, {
 			headers: {
 				'username': localStorage.getItem('username'),
@@ -93,6 +94,7 @@ export default function Workout() {
 
     //states for view workout modal
     const [workid, setWorkid] = useState('')
+    const [workName, setWorkName] = useState('')
     const [showWork, setShowWork] = useState(false)
 
     async function populateWorkout() {
@@ -285,7 +287,7 @@ export default function Workout() {
 
 
 
-                <Button onClick={() => showWorkouts(d.workout_id)}>
+                <Button onClick={() => showWorkouts(d.workout_id, d.name)}>
                     View Workout
                 </Button>
 
@@ -295,7 +297,7 @@ export default function Workout() {
 
                 <Modal show={showWork} onHide={handleCloseW}>
                     <Modal.Header closeButton>
-                    <Modal.Title>{d.name}</Modal.Title>
+                    <Modal.Title>{workName}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                     {exercises.map(f => (
