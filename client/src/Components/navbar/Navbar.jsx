@@ -1,9 +1,12 @@
 import "./navbar.css"
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
+import React, {useEffect, useState} from 'react'
 
-export default function Navbar() {
+export default function Navbar({changeUserName}) {
     const history = useHistory();
+    const l = useLocation();
 
+    const [searchBar, setSearchBar] = useState("");
 
     function logoff() {
         localStorage.removeItem('jwtToken');
@@ -15,6 +18,18 @@ export default function Navbar() {
         history.push('/userProfile');
     }
 
+    function searchFriend(event) {
+        //pass serach bar 
+        console.log(searchBar);
+        history.push({
+            pathname: '/userProfile',
+            state: searchBar
+        })
+        if(window.location.pathname === "/userProfile") {
+            changeUserName(searchBar)
+        }
+        event.preventDefault();
+    }
 
     return (
         <div className="navbarContainer">
@@ -23,7 +38,10 @@ export default function Navbar() {
             </div>
             <div className="navbarCenter">
                 <div className="searchbar">
-                    <input placeholder="Search for friends, workouts, and posts" className="searchInput"/>
+                    <form onSubmit={searchFriend}>
+                        <input placeholder="Search for friends, workouts, and posts" className="searchInput" onChange={(e) => setSearchBar(e.target.value)}/>
+                        <button type="submit"></button>
+                    </form>
                 </div>
             </div>
             <div className="navbarRight">
