@@ -51,8 +51,8 @@ function decrypt(data){
 }
 
 function isFriendsSQL(self, target){
-    return "SELECT target_user FROM user_follow WHERE source_user='"+ self + "' AND target_user='"+ target
-        + "' AND approved=true";
+    return "SELECT target_user FROM user_follow WHERE source_user="+ db.escape(self) + " AND target_user="+ db.escape(target)
+        + " AND approved=true";
 }
 
 function doesFollow(self,target){
@@ -742,6 +742,7 @@ app.get("/api/postComments", (req,res)=>{
 })
 
 // Sends message to a message group
+// START HERE AND GO UP NICK
 app.post("/messages/:groupID" , (req,res) =>{
     
     const groupID = req.params.groupID;
@@ -760,6 +761,11 @@ app.post("/messages/:groupID" , (req,res) =>{
             console.log(result);
             const send = await fetch(mailAPIURL + '/api/message', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'username': userName,
+
+                },
                 body: JSON.stringify({
                     username:userName,
                     groupID: groupID,
@@ -777,47 +783,13 @@ app.get("/posts/:target", (req,res) => {
     const username = req.headers['username'];
     let sql;
     if(targetUser === username){
-        sql="SELECT * FROM user_post WHERE user_name='"+ username +"'";
+        sql="SELECT * FROM user_post WHERE user_name="+ db.escape(username);
     }
     else{
         sql = "SELECT up.* FROM user_post up WHERE up.user_name in "+ isFriendsSQL(username, targetUser)
-            + "OR up.user_name in " + "(SELECT user_name from user WHERE up.user_name='"+ targetUser
-            +"' AND private_account=0)";
+            + "OR up.user_name in " + "(SELECT user_name from user WHERE up.user_name="+ db.escape(targetUser)
+            +" AND private_account=0)";
     }
-    db.query(sql, (err, result) => {
-        if (err) {
-            console.log(err);
-            res.send(null);
-        }
-        else {
-            console.log(result);
-            res.send(result);
-        }
-    })
-})
-
-// Find comments to a given post
-app.get("/comments/:postKey", (req,res) => {
-    const postkey = req.params["postKey"];
-
-    const sql = "SELECT DISTINCT pc.message FROM user-post up, post_meta pm, post_comment pc WHERE up.post_id = pm.post_id AND up.post_id = pc.post_id AND pm.key = '" + postkey + "'";
-    db.query(sql, (err, result) => {
-        if (err) {
-            console.log(err);
-            res.send(null);
-        }
-        else {
-            console.log(result);
-            res.send(result);
-        }
-    })
-})
-
-// Find likes to a given comment
-app.get("/comments/likes/:message", (req,res) => {
-    const message = req.params["message"];
-
-    const sql = "SELECT COUNT(cl.comment_id) FROM post_comment pc, comment_like cl WHERE pc.comment_id = cl.comment_id AND pc.message LIKE '" + message +"'";
     db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
@@ -837,9 +809,9 @@ app.get("/moves/done/:userName", (req,res) => {
 
     let sql;
     if(target===self)
-        sql="SELECT * FROM completed_move WHERE user_name='"+ self +"'";
+        sql="SELECT * FROM completed_move WHERE user_name="+ db.escape(self);
     else
-        sql="SELECT * FROM completed_move WHERE user_name='"+ target +"' AND '"+ target + "' in "
+        sql="SELECT * FROM completed_move WHERE user_name="+ db.escape(target) +" AND "+ db.escape(target) + " in "
             + isFriendsSQL(self, target);
     db.query(sql, (err, result) => {
         if (err) {
@@ -865,8 +837,8 @@ app.post("/api/addFriend", (req,res)=>{
 
     console.log("Self",source);
     console.log("target",target);
-    const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT '"+ source 
-    +"', '"+ target +"','"+ now() +"', not user.private_account as approved FROM user WHERE user_name='"+ target +"'";
+    const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT "+ db.escape(source)
+    +", "+ db.escape(target) +","+ db.escape(now()) +", not user.private_account as approved FROM user WHERE user_name="+ db.escape(target) +"";
 
     return runSQL_NoResult(sql,res);
 })
@@ -878,8 +850,8 @@ app.post("/api/acceptFriend", (req,res)=>{
     const target=req.headers['username'];
     const source= req.body.source;
 
-    const sql="UPDATE user_follow SET approved=true WHERE source_user='"+ source + "' and target_user='"+ target
-        +"' AND follow_time='"+ now() +"'";
+    const sql="UPDATE user_follow SET approved=true WHERE source_user="+ db.escape(source) + " and target_user="+ db.escape(target)
+        +" AND follow_time="+ db.escape(now());
 
     return runSQL_NoResult(sql,res);
 })
@@ -889,7 +861,7 @@ app.delete("/api/removeFriend", (req,res)=>{
     const source=req.body.source;
     const target=req.body.target;
 
-    const sql="DELETE FROM user_follow WHERE source_user='"+ source +"' and target_user='" + target + "'";
+    const sql="DELETE FROM user_follow WHERE source_user="+ db.escape(source) +" and target_user=" + db.escape(target);
 
     return runSQL_NoResult(sql,res);
 })
@@ -898,7 +870,7 @@ app.delete("/api/deletePost",(req,res)=>{
     const username=req.headers['username'];
     const postID=req.body.postID;
 
-    const sql="DELETE FROM user_post WHERE post_id='"+ postID +"' AND user_name='"+ username + "'";
+    const sql="DELETE FROM user_post WHERE post_id="+ db.escape(postID) +" AND user_name="+ db.escape(username);
 
     return runSQL_NoResult(sql,res);
 })
@@ -907,7 +879,7 @@ app.delete("/api/deleteComment", (req,res)=>{
     const username=req.headers['username'];
     const commentID=req.body.commentID;
 
-    const sql="DELETE FROM post_comment WHERE comment_id='"+ commentID+ "' AND user_name='"+ username +"'";
+    const sql="DELETE FROM post_comment WHERE comment_id="+ db.escape(commentID)+ " AND user_name="+ db.escape(username);
 
     return runSQL_NoResult(sql,res);
 })
@@ -917,8 +889,8 @@ app.delete("/api/deleteWorkout", (req,res)=>{
     const workout_id=req.body.workoutID;
 
     const sql="DELETE FROM 'set' WHERE workout_id='"+ workout_id +
-        "' AND true IN (SELECT true FROM workout WHERE workout_id= '"+ workout_id +"' AND creator_user_name='"+ username
-    +"'); DELETE FROM workout WHERE workout_id='"+ workout_id +"' AND creator_user_name='"+ username +"'";
+        "' AND true IN (SELECT true FROM workout WHERE workout_id= "+ db.escape(workout_id) +" AND creator_user_name="+ db.escape(username)
+    +"); DELETE FROM workout WHERE workout_id="+ db.escape(workout_id) +" AND creator_user_name="+ db.escape(username);
 
     return runSQL_NoResult(sql,res);
 })
@@ -928,8 +900,8 @@ app.delete("/api/deleteSet", (req,res)=>{
     const workout_id=req.body.workoutID;
     const set_id=req.body.setID;
 
-    const sql="DELETE FROM 'ser' WHERE set_id='"+ set_id +"' AND true IN (SELECT true FROM workout WHERE workout_id= '"
-        + workout_id +"' AND creator_user_name='"+ username +"')";
+    const sql="DELETE FROM 'set' WHERE set_id="+ db.escape(set_id) +" AND true IN (SELECT true FROM workout WHERE workout_id= "
+        + db.escape(workout_id) +" AND creator_user_name="+ db.escape(username) +")";
 
     return runSQL_NoResult(sql,res);
 
@@ -941,8 +913,10 @@ app.post("/api/makePost", (req, res)=>{
     const text=req.body.text;
     const workout_id=req.body.workoutID
 
-    const sql= "INSERT INTO user_post (post_id, user_name, message, created_at, workout_ID) VALUES ('"+ post_id + "', '"
-        + username + "', '" + text + "',' " + now() + "', "+ workout_id +")";
+
+    const sql= "INSERT INTO user_post (post_id, user_name, message, created_at, workout_ID) VALUES ("+ db.escape(post_id) + ","
+        + db.escape(username) + ", " + db.escape(text) + ", " + db.escape(now()) + ", "+ db.escape(workout_id) +")";
+
 
     return runSQL_NoResult(sql,res);
 })
@@ -951,7 +925,7 @@ app.post("/api/makePost", (req, res)=>{
 app.get("/api/getUser/:target",(req,res)=> {
     const target = req.params['target'];
 
-    const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name='" + target + "'";
+    const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name="+ db.escape(target);
     console.log(sql);
     db.query(sql, (err, result) =>{
         if (err) {
@@ -972,14 +946,14 @@ app.get("/api/getUser/:target",(req,res)=> {
 app.post("/api/setPrivateAccount", (req,res)=>{
     const username=req.headers['username'];
 
-    const sql="UPDATE user SET private_account=true WHERE user_name='"+ username +"'";
+    const sql="UPDATE user SET private_account=true WHERE user_name="+ db.escape(username);
     return runSQL_NoResult(sql,res);
 })
 
 app.post("/api/setPublicAccount",(req,res)=>{
     const username=req.headers['username'];
 
-    const sql="UPDATE user SET private_account=false WHERE user_name='"+ username +"'";
+    const sql="UPDATE user SET private_account=false WHERE user_name="+ db.escape(username);
     return runSQL_NoResult(sql,res);
 })
 
@@ -987,15 +961,14 @@ app.get("/api/isFriend/:target", (req,res)=>{
     const source=req.headers["username"];
     const target = req.params['target'];
 
-    const sql= "SELECT DISTINCT TRUE WHERE '" + target + "' IN ("+ isFriendsSQL(source,target) +")";
-
-    db.query(sql, (err, result) =>{
+    const sql= "SELECT DISTINCT TRUE AS r WHERE ? IN ("+ isFriendsSQL(source,target) +")";
+    db.query(sql, [target], (err, result) =>{
         if (err) {
             console.log(err);
             res.send(null);
         }
         else if(result[0]===undefined){
-            return res.json({status:'unable to access profile'});
+            return res.json({status:'unable to access profile', isFriend:JSON.stringify([{r:0}])});
         }
         else {
             console.log(result);
