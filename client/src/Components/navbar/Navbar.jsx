@@ -1,7 +1,7 @@
 import "./navbar.css"
 import { Link, useHistory, useLocation } from "react-router-dom";
 import React, {useEffect, useState} from 'react'
-
+import {changeUserName} from "../../pages/userProfile"
 export default function Navbar({changeUserName}) {
     const history = useHistory();
     const l = useLocation();
@@ -15,7 +15,7 @@ export default function Navbar({changeUserName}) {
     }
 
     function viewProfile() {
-        history.push('/userProfile');
+        history.push({pathname: '/userProfile', state: localStorage.getItem('username')});
     }
 
     function searchFriend(event) {
