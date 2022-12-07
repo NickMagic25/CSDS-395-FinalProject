@@ -102,17 +102,17 @@ app.post("/login", (req, res) => {
     }
     const username = req.body.username;
     const password = req.body.password;
-    const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = " + db.escape(username);
+    const hashedItemsSQL = "SELECT hashed_password FROM user WHERE user_name = " + db.escape(username);
     db.query(hashedItemsSQL, (error, items)=>{
-        console.log(items)
-        if(error) throw error;
+        if(error) console.log(error);
         if(items[0]!=null) {
             let hashed_password=items[0]["hashed_password"]
             if(bcrypt.compareSync(password,hashed_password)){
                 const sql = "SELECT * FROM user WHERE user_name = " + db.escape(username) + " AND hashed_password = "
                     + db.escape(hashed_password);
-                const updateLastLoginSQL = "UPDATE user SET last_online = " + db.escape(now) + " WHERE user_name = "
+                const updateLastLoginSQL = "UPDATE user SET last_online = " + db.escape(now()) + " WHERE user_name = "
                     + db.escape(username);
+                console.log(sql);
                 db.query(sql, function (err, result) {
                     if (err) console.log(err);
                     db.query(updateLastLoginSQL, (err1, result1) => {
@@ -455,9 +455,9 @@ app.post("/messages/creategroup", (req, res) =>{
     function makeMessageGroup(){
         const id = makeID(20)
         const sql = "INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES (" + db.escape(id) + ", "
-            + db.escape(name) + ", " + db.escape(username) + ", " + db.escape(now) + ")";
+            + db.escape(name) + ", " + db.escape(username) + ", " + db.escape(now()) + ")";
         const adminSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES " +
-            "(" + db.escape(id) + ", " + db.escape(username) + ", " + db.escape(now) + ", 3)";
+            "(" + db.escape(id) + ", " + db.escape(username) + ", " + db.escape(now()) + ", 3)";
         db.query(sql, (err, result) =>{
             if(err){
                 if (err.errno === 1062){
@@ -525,7 +525,7 @@ app.post("/programs/start/:programID", (req,res) =>{
         // if user is not currently doing that program, start the program
         else if (result1[0]=== undefined){
             const sql = "INSERT INTO completing_program (program_id, user_name, date_started) VALUES ("
-                + db.escape(programID) + ","+ db.escape(username) + "," + db.escape(now) + ")";
+                + db.escape(programID) + ","+ db.escape(username) + "," + db.escape(now()) + ")";
             db.query(sql, (err, result)=>{
                 if (err) {
                     console.log(err);
@@ -604,7 +604,7 @@ app.post("/api/messages/addmember/:groupID", (req,res) =>{
 
     const checkSQL="SELECT * FROM message_group_member WHERE group_id = " + db.escape(groupID) + " AND user_name=" + db.escape(targetUser);
     const insertSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date) " +
-        "SELECT " + db.escape(groupID) + ", " + db.escape(targetUser) + ", " + db.escape(now) + " FROM message_group_member " +
+        "SELECT " + db.escape(groupID) + ", " + db.escape(targetUser) + ", " + db.escape(now()) + " FROM message_group_member " +
         "WHERE "+ db.escape(username) + " = user_name AND group_ID = " + db.escape(groupID) + " AND admin_level>=2";
     // check to see if user is already in the group
     db.query(checkSQL, (err, result)=>{
@@ -635,7 +635,7 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
 
     // SQL for completing the workout
     const completionSQL="INSERT INTO completed_workout (workout_id, user_name, date_completed) VALUES (" + db.escape(workoutID)
-        + ", " + db.escape(username) + ", " + db.escape(now) + ")";
+        + ", " + db.escape(username) + ", " + db.escape(now()) + ")";
     // SQL for finding if the workout is a part of a program the USER is doing and if they're doing it on the day of the program
     const programIDSQL = "SELECT c.program_id FROM completing_program as c, program_contains as p WHERE " +
         "c.program_id = p.program_id AND c.user_name = "+ db.escape(username) +" AND p.workout_id = "+ db.escape(workoutID)+
@@ -751,7 +751,7 @@ app.post("/messages/:groupID" , (req,res) =>{
     const message_id=req.body.message_id
 
     const insertSQL= "INSERT INTO message(group_id, content, sender, send_time, id) SELECT " + db.escape(groupID) + ", "
-        + db.escape(message) + ", " + db.escape(userName) + ", " + db.escape(now) +", "+ db.escape(message_id) + " FROM"
+        + db.escape(message) + ", " + db.escape(userName) + ", " + db.escape(now()) +", "+ db.escape(message_id) + " FROM"
         +" message_group_member WHERE user_name = " + db.escape(userName) + " AND group_ID="+ db.escape(groupID);
     db.query(insertSQL, async (err, result) => {
         if (err) {
