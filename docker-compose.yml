@@ -1,0 +1,9 @@
+services:
+  email:
+    image: ij-sendgrid
+    ports:
+      - 6000:6000
+  app:
+    image: insta-jacked
+    ports:
+      - 5000:5000
