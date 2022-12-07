@@ -731,10 +731,11 @@ app.post("/messages/:groupID" , (req,res) =>{
     const groupID = req.params.groupID;
     const userName = req.headers['username'];
     const message = encrypt(req.body.message);
+    const message_id=req.body.message_id
 
-    const insertSQL= "INSERT INTO message(group_id, content, sender, send_time) SELECT '" + groupID + "', '" + message +
-        "', '" + userName + "', '" + now() +"' FROM message_group_member WHERE user_name = '"+ userName +
-        "' AND group_ID='"+ groupID + "'" ;
+    const insertSQL= "INSERT INTO message(group_id, content, sender, send_time, id) SELECT '" + groupID + "', '" + message +
+        "', '" + userName + "', '" + now() +"', '"+ message_id + "' FROM message_group_member WHERE user_name = '"
+        + userName + "' AND group_ID='"+ groupID + "'" ;
     db.query(insertSQL, async (err, result) => {
         if (err) {
             console.log(err);
@@ -743,14 +744,10 @@ app.post("/messages/:groupID" , (req,res) =>{
             console.log(result);
             const send = await fetch(mailAPIURL + '/api/message', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'username': userName,
-
-                },
                 body: JSON.stringify({
+                    username:userName,
                     groupID: groupID,
-                    message: message,
+                    message: message
                 }),
             })
             return res.json({status: 'sent'});
@@ -926,9 +923,10 @@ app.post("/api/makePost", (req, res)=>{
     const username=req.headers['username'];
     const post_id=req.body.postID;
     const text=req.body.text;
+    const workout_id=req.body.workoutID
 
-    const sql= "INSERT INTO user_post (post_id, user_name, message, created_at) VALUES ('"+ post_id + "', '"
-        + username + "', '" + text + "',' " + now() + "')";
+    const sql= "INSERT INTO user_post (post_id, user_name, message, created_at, workout_ID) VALUES ('"+ post_id + "', '"
+        + username + "', '" + text + "',' " + now() + "', '"+ workout_id +"')";
 
     return runSQL_NoResult(sql,res);
 })
