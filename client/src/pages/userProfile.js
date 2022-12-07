@@ -13,9 +13,29 @@ export default function UserProfile(props) {
   const [lastName, setLastName] = useState("")
   const [userName, setUserName] = useState("")
     const[onUser, setOnUser] = useState(false);
+    const[followed, setFollowed] = useState(false);
+
+    async function getFollowedUser(currentProfile) {
+        const req = await fetch('http://localhost:5000/api/isFriend/' + currentProfile , {
+            headers: {
+				'username': localStorage.getItem('username'),
+			},
+        })
+        const data = await req.json();
+        //0 is false, 1 is true
+        if (data.status === 'ok') {
+            var followedOrNo = data.isFriend[0].r;
+            if (followedOrNo == 0){
+                setFollowed(false);
+            }
+            else if (followedOrNo == 1){
+                setFollowed(true);
+            }
+        }
+        return;
+    }
 
   async function getProfileInfo() {
-    console.log(userName);
     const req = await fetch('http://localhost:5000/api/getUser/' + userName, {
 			headers: {
 				'username': localStorage.getItem('username'),
@@ -26,8 +46,6 @@ export default function UserProfile(props) {
         setFirstName(data.profile[0].first_name);
         setLastName(data.profile[0].last_name);
         setUserName(data.profile[0].user_name);
-    } else {
-        alert(data.error)
     }
     return;
     }
@@ -41,8 +59,9 @@ export default function UserProfile(props) {
                 history.push('/login')
             }
             else {
-                setUserName(location.state)
-                
+                setUserName(location.state);
+                getFollowedUser(location.state);
+                console.log(followed);
             }
         }
         else{
@@ -57,7 +76,9 @@ export default function UserProfile(props) {
         else {
             setOnUser(false);
         }
-        getProfileInfo()
+        getFollowedUser(userName);
+        console.log(followed);
+        getProfileInfo();
                 return;
         
     }, [userName])
@@ -72,7 +93,8 @@ export default function UserProfile(props) {
                 "target" : userName,
             }
 		})
-        console.log(req);
+        
+        setFollowed(true);
         //const data = await req.json()
         // if (data.status === 'ok') {
         //     console.log("added");
@@ -82,13 +104,28 @@ export default function UserProfile(props) {
         // return;
     }
 
+    async function unfollow() {
+        const req = await axios.post('http://localhost:5000/api/removeFriend', {
+			headers: {
+				'username': localStorage.getItem('username'),
+			},
+            body: {
+                "target" : userName,
+            }
+		})
+        setFollowed(false);
+    }
+
   return (
     <>
     <div>
         <Navbar changeUserName={setUserName}/>
         <div className="userProfile">
-        {!onUser && 
+        {!onUser && !followed && 
             <button onClick={follow}>Follow</button>
+        }
+        {!onUser && followed && 
+            <button onClick={unfollow}>Unfollow</button>
         }
         
         
