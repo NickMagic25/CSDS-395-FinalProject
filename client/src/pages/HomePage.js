@@ -16,7 +16,7 @@ function HomePage(){
           <form>
             <label>
                <input type="text" name="name" placeholder="enter email" className={styles.emailBox}/>
-               </label>
+               </label>w0
                 <input type="submit" value="Sign up" className={styles.submitButton}/>
                 </form>
 

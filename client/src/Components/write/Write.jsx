@@ -18,7 +18,8 @@ export default function Write({refresh}) {
 			},
             body: JSON.stringify({
                 postID: id,
-                text: text
+                text: text,
+                workoutID: null,
             }),
         })
         const data = await response.json()
@@ -29,7 +30,7 @@ export default function Write({refresh}) {
         else {
             alert('posted')
             setText('')
-            const newPost = {post_id: id, user_name: username, message:text}
+            const newPost = {post_id: id, user_name: username, message:text, created_at: "Less than a min ago..."}
             refresh(newPost);
             return;
         }
