@@ -846,12 +846,14 @@ app.get("/moves/done/:userName", (req,res) => {
 // target: other user
 // auto accepts if public account
 app.post("/api/addFriend", (req,res)=>{
-    const target= req.body.target;
-    const source= req.headers['username'];
+    console.log(req.body);
+    const target= req.body.body.target;
+    const source= req.body.headers['username'];
 
-    console.log(source);
-    const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT "+
-        source + ", '"+ target +"','"+ now() +"', not user.private_account as approved FROM user WHERE user_name='"+ target +"'";
+    console.log("Self",source);
+    console.log("target",target);
+    const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT '"+ source 
+    +"', '"+ target +"','"+ now() +"', not user.private_account as approved FROM user WHERE user_name='"+ target +"'";
 
     return runSQL_NoResult(sql,res);
 })
