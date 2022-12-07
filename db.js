@@ -579,6 +579,22 @@ app.get("/workouts/:workoutID", (req,res) =>{
     })
 })
 
+app.get("/workouts/workoutName/:workoutID", (req,res) =>{
+    const workoutID = req.params["workoutID"];
+    const sql = "SELECT name FROM workout WHERE workout_id = '" + workoutID + "'";
+
+    db.query(sql, (err, result) =>{
+        if (err) {
+            console.log(err);
+            return res.json({ status: 'error' })
+        }
+        else {
+            console.log(result);
+            return res.json({ status: 'ok', name: result })
+        }
+    })
+})
+
 // adds a user to a message group if above admin level 2
 app.post("/api/messages/addmember/:groupID", (req,res) =>{
     const groupID = req.params['groupID'];
@@ -897,8 +913,10 @@ app.post("/api/makePost", (req, res)=>{
     const text=req.body.text;
     const workout_id=req.body.workoutID
 
+
     const sql= "INSERT INTO user_post (post_id, user_name, message, created_at, workout_ID) VALUES ("+ db.escape(post_id) + ","
         + db.escape(username) + ", " + db.escape(text) + ", " + db.escape(now()) + ", "+ db.escape(workout_id) +")";
+
 
     return runSQL_NoResult(sql,res);
 })

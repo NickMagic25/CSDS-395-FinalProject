@@ -60,6 +60,32 @@ export default function Workout() {
         return;
     }
 
+    async function shareWorkouts(id, name) {
+        console.log('reached')
+        const pId = uuidv4();
+        setWorkid(id)
+        const req = await fetch('http://localhost:5000/api/makePost',{
+            method:'POST',
+			headers: {
+                'Content-Type': 'application/json',
+				'username': localStorage.getItem('username'),
+			},
+            body: JSON.stringify({
+                postID: pId,
+                text: "I just completed my " + name +" workout!",
+                workoutID: "'"+ id + "'",
+            }),
+		})
+
+		const data = await req.json()
+		if (data.status === 'ok') {
+            alert('shared')
+		} else {
+			alert(data.error)
+		}
+        return;
+    }
+
     //name of workout
     const [name, setName] = useState('')
     const [day, setDay] = useState('')
@@ -261,6 +287,10 @@ export default function Workout() {
 
                 <Button onClick={() => showWorkouts(d.workout_id)}>
                     View Workout
+                </Button>
+
+                <Button onClick={() => shareWorkouts(d.workout_id, d.name)}>
+                    Share Workout
                 </Button>
 
                 <Modal show={showWork} onHide={handleCloseW}>
