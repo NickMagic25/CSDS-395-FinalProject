@@ -74,7 +74,7 @@ function sqlHandler(sql, message, subject, res){
 }
 
 app.post("/api/message", (req,res)=>{
-    const senderUserName = req.body.username;
+    const senderUserName = req.headers['username'];
     const groupID = req.body.groupID;
     const groupName= req.body.groupName;
     const message = req.body.message;

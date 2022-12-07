@@ -7,6 +7,7 @@ const registerValidation = require("./validations/registerValidation");
 const loginValidation = require("./validations/loginValidation");
 const keys = require("./config/keys");
 const CryptoJS = require("crypto-js");
+const fetch=require('node-fetch-commonjs');
 
 
 const app = express();
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 const port = '5000'
+const mailAPIURL="http://localhost:5002";
 
 app.listen(port, () => {
     console.log("Server started on port " + port + "!");
@@ -728,19 +730,30 @@ app.post("/messages/:groupID" , (req,res) =>{
     
     const groupID = req.params.groupID;
     const userName = req.headers['username'];
-    const message = req.body.message;
+    const message = encrypt(req.body.message);
 
     const insertSQL= "INSERT INTO message(group_id, content, sender, send_time) SELECT '" + groupID + "', '" + message +
         "', '" + userName + "', '" + now() +"' FROM message_group_member WHERE user_name = '"+ userName +
         "' AND group_ID='"+ groupID + "'" ;
-    db.query(insertSQL, (err, result)=>{
+    db.query(insertSQL, async (err, result) => {
         if (err) {
             console.log(err);
-            return res.status(400).json({ password: err.sqlMessage })
-        }
-        else {
+            return res.status(400).json({password: err.sqlMessage})
+        } else {
             console.log(result);
-            return res.json({ status:'sent' });
+            const send = await fetch(mailAPIURL + '/api/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'username': userName,
+
+                },
+                body: JSON.stringify({
+                    groupID: groupID,
+                    message: message,
+                }),
+            })
+            return res.json({status: 'sent'});
         }
     })
 })
@@ -932,6 +945,7 @@ app.get("/api/getUser/:target",(req,res)=> {
         }
         else {
             console.log(result);
+            fetch("")
             return res.json({status: 'ok', profile: result});
         }
     })
