@@ -973,7 +973,7 @@ app.get("/api/isFriend/:target", (req,res)=>{
     const source=req.headers["username"];
     const target = req.params['target'];
 
-    const sql= "SELECT DISTINCT TRUE WHERE target IN ("+ isFriendsSQL(source,target) +")";
+    const sql= "SELECT DISTINCT TRUE WHERE '" + target + "' IN ("+ isFriendsSQL(source,target) +")";
 
     db.query(sql, (err, result) =>{
         if (err) {
