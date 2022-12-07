@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: insta-jacked
+spec:
+  containers:
+    - name: server
+      image: insta-jacked
+      ports:
+        - containerPort: 5000
+    - name: email-notis
+      image: ij-sendgrid
+      ports:
+        - containerPort: 6000
