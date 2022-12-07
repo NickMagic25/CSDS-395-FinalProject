@@ -20,7 +20,7 @@ function decrypt(data){
 const app=express();
 app.use(cors());
 app.use(express.json());
-const port=5001;
+const port=6000;
 
 app.listen(port, () =>{console.log('listening on port ' + port)});
 

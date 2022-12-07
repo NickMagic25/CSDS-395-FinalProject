@@ -849,8 +849,9 @@ app.post("/api/addFriend", (req,res)=>{
     const target= req.body.target;
     const source= req.headers['username'];
 
-    const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT " +
-        "'"+ source +"', '"+ target +"','"+ now() +"', not user.private_account FROM user WHERE user_name=''";
+    console.log(source);
+    const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT "+
+        source + ", '"+ target +"','"+ now() +"', not user.private_account as approved FROM user WHERE user_name='"+ target +"'";
 
     return runSQL_NoResult(sql,res);
 })
