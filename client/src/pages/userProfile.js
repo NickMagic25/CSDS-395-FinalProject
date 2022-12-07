@@ -1,17 +1,19 @@
 import React, {useEffect, useState} from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import {ProfileInfo} from "../Components/profileInfo/ProfileInfo";
 import Navbar from "../Components/navbar/Navbar";
-export default function UserProfile() {
+export default function UserProfile(props) {
     const history = useHistory()
     const token = localStorage.getItem('jwtToken')
+    const location = useLocation();
 
-    const [firstName, setFirstName] = useState("")
+  const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [userName, setUserName] = useState("")
+  const [isFirstLoad, setIsFirstLoad] = useState("true");
 
   async function getProfileInfo() {
-    const req = await fetch('http://localhost:5000/api/getUser/' + localStorage.getItem('username'), {
+    const req = await fetch('http://localhost:5000/api/getUser/' + userName, {
 			headers: {
 				'username': localStorage.getItem('username'),
 			},
@@ -28,6 +30,12 @@ export default function UserProfile() {
     }
 
     useEffect(() => {
+        // if (location.firstLoad) {
+        //     window.location.reload();
+        //     location.firstLoad = false;
+        // } else {
+        //     setIsFirstLoad(false)
+        // }    
         const token = localStorage.getItem('jwtToken')
         const username = localStorage.getItem('username')
         if(token) {
@@ -36,7 +44,7 @@ export default function UserProfile() {
                 history.push('/login')
             }
             else {
-                getProfileInfo();
+                setUserName(location.state)
                 return;
             }
         }
@@ -45,12 +53,21 @@ export default function UserProfile() {
         }
     }, [])
 
+    useEffect(() => {
+       
+        getProfileInfo()
+                return;
+        
+    }, [userName])
+
+    
+
     
 
   return (
     <>
     <div>
-        <Navbar />
+        <Navbar changeUserName={setUserName}/>
         <div className="userProfile">
         <button>Follow</button>
         <div className="firstName">{firstName}</div>
