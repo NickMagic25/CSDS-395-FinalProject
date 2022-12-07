@@ -56,7 +56,7 @@ function isFriendsSQL(self, target){
 }
 
 function doesFollow(self,target){
-    return "SELECT source_user FROM user_follow WHERE source_user='"+self + "' AND target_user='"+ target+"'";
+    return "SELECT source_user FROM user_follow WHERE source_user="+db.escape(self) + " AND target_user="+ db.escape(target);
 }
 
 
@@ -90,8 +90,8 @@ function now(){
 }
 
 function findFriendsSQL(self){
-    return "SELECT target_user FROM user_follow WHERE source_user = '"
-        + self + "' AND approved = 1";
+    return "SELECT target_user FROM user_follow WHERE source_user = "
+        + db.escape(self) + " AND approved = 1";
 }
 
 // // login to a user
@@ -102,17 +102,17 @@ app.post("/login", (req, res) => {
     }
     const username = req.body.username;
     const password = req.body.password;
-    const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = '" + username + "'";
+    const hashedItemsSQL = "SELECT hashed_password, email FROM user WHERE user_name = " + db.escape(username);
     db.query(hashedItemsSQL, (error, items)=>{
         console.log(items)
         if(error) throw error;
         if(items[0]!=null) {
             let hashed_password=items[0]["hashed_password"]
             if(bcrypt.compareSync(password,hashed_password)){
-                const sql = "SELECT * FROM user WHERE user_name = '" + username + "' AND hashed_password = '"
-                    + hashed_password + "'";
-                const updateLastLoginSQL = "UPDATE user SET last_online = '" + now() + "' WHERE user_name = '"
-                    + username + "'";
+                const sql = "SELECT * FROM user WHERE user_name = " + db.escape(username) + " AND hashed_password = "
+                    + db.escape(hashed_password);
+                const updateLastLoginSQL = "UPDATE user SET last_online = " + db.escape(now) + " WHERE user_name = "
+                    + db.escape(username);
                 db.query(sql, function (err, result) {
                     if (err) console.log(err);
                     db.query(updateLastLoginSQL, (err1, result1) => {
@@ -166,14 +166,13 @@ app.post("/register", (req, res) => {
     const firstName = req.body.firstName;
     const lastName= req.body.lastName;
 
-    const creationDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
     password = hashString(password);
     email = encrypt(email);
     console.log(password);
     console.log(email);
     const sql = "INSERT INTO user (user_name, first_name, last_name, mobile_number, email, hashed_password, " +
-        "creation_date, last_online, intro) VALUES ('" + username + "','"+ firstName + "','" + lastName + "','" + 0 + "','"
-        + email + "','" + password + "','" + creationDate + "','" + creationDate + "', NULL)";
+        "creation_date, last_online, intro) VALUES (" + db.escape(username) + ","+ db.escape(firstName) + "," + db.escape(lastName) + "," + 0 + ","
+        + db.escape(email) + "," + db.escape(password) + "," + db.escape(now()) + "," + db.escape(now()) + ", NULL)";
     db.query(sql, function(err, result){
         if (err){
             // handle duplicate names;
@@ -201,10 +200,10 @@ app.get("/user/following/:username", (req, res) =>{
 
     let sql;
     if(self===target)
-        sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = '" + self + "'";
+        sql = "SELECT target_user FROM user_follow WHERE approved = true AND source_user = " + db.escape(self);
     else
-        sql="SELECT target_user FROM user_follow WHERE approved =true AND source_user='"+ target + "' AND '"
-            + target + "' in " + isFriendsSQL(self,target)
+        sql="SELECT target_user FROM user_follow WHERE approved =true AND source_user="+ db.escape(target) + " AND "
+            + db.escape(target) + " in " + isFriendsSQL(self,target)
     db.query(sql,function (err, result){
         if (err) {
             console.log(err);
@@ -225,12 +224,12 @@ app.get("/user/interactions/:userName", (req, res) => {
 
     let sql;
     if(target===self)
-        sql="SELECT c.post_id FROM post_comment c WHERE c.user_name ='"+ self+ "'; " +
-            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + self + "'";
+        sql="SELECT c.post_id FROM post_comment c WHERE c.user_name ="+ db.escape(self)+ "; " +
+            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = " + db.escape(self);
     else
-        sql = "SELECT c.post_id FROM post_comment AS c WHERE c.user_name = '" + target
-            + "' AND '" + target + "' IN "+ isFriendsSQL(self,target) + "; " +
-            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + target + "' AND '"+ target + "' IN "
+        sql = "SELECT c.post_id FROM post_comment AS c WHERE c.user_name = " + db.escape(target)
+            + " AND " + db.escape(target) + " IN "+ isFriendsSQL(self,target) + "; " +
+            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + target + "' AND "+ db.escape(target) + " IN "
             + isFriendsSQL(self,target);
     db.query(sql, function (err, result){
         if (err) {
@@ -251,8 +250,8 @@ app.get("/workouts/search", (req,res) => {
     const search = req.body.searchBar;
 
     console.log("Searching:", search);
-    const sql = "SELECT name, workout_id, creator_user_name FROM workout WHERE name ='" + search +
-        "' OR creator_user_name = '" + search + "'";
+    const sql = "SELECT name, workout_id, creator_user_name FROM workout WHERE name =" + db.escape(search) +
+        " OR creator_user_name = " + db.escape(search);
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -270,7 +269,7 @@ app.get("/workouts/get", (req,res) => {
     const user = req.headers['username']
 
     // commenting out to hard code in a name
-    const sql = "SELECT name, workout_id, day, creator_user_name FROM workout WHERE creator_user_name ='" + user + "'";
+    const sql = "SELECT name, workout_id, day, creator_user_name FROM workout WHERE creator_user_name =" + db.escape(user);
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -293,8 +292,8 @@ app.get("/programs/search", (req,res) => {
     const search = req.body.searchBar;
 
     console.log("Searching for a program of length " + length + " with name " + search);
-    const sql = "SELECT * FROM program WHERE (program_name = '" + search + "' OR program_creator = '" + search +
-        "') AND length " + comparer + "= " + length;
+    const sql = "SELECT * FROM program WHERE (program_name = " + db.escape(search) + " OR program_creator = " + db.escape(search) +
+        ") AND length " + comparer + "= " + db.escape(length);
     db.query(sql, (err, result) => {
         if (err) {
             console.log(err);
@@ -312,8 +311,8 @@ app.get("/programs/search", (req,res) => {
 app.get("/workouts/moves/:workoutID", (req, res) => {
     const workoutID = req.params["workoutID"];
 
-    const SQL = "SELECT s.* FROM workout as w, `set` as s WHERE w.workout_id = '" + workoutID
-        + "' AND s.workout_id = '" + workoutID + "'; SELECT * FROM workout_meta WHERE workout_id = '" + workoutID + "'";
+    const SQL = "SELECT s.* FROM workout as w, `set` as s WHERE w.workout_id = " + db.escape(workoutID)
+        + " AND s.workout_id = " + db.escape(workoutID) + "; SELECT * FROM workout_meta WHERE workout_id = " + db.escape(workoutID);
     db.query(SQL, (err, result) => {
         if (err) {
             console.log(err);
@@ -331,9 +330,9 @@ app.get("/workouts/moves/:workoutID", (req, res) => {
 app.get("/programs/workouts/:programID", (req, res) => {
     const programID = req.params["programID"];
 
-    const programSQL = "SELECT c.workout_id, w.name FROM program_contains as c, workout as w WHERE program_id = '"
-        + programID +"' AND w.workout_id = c.workout_id";
-    const metaSQL = "SELECT * FROM program_meta WHERE program_id = '" + programID +"'";
+    const programSQL = "SELECT c.workout_id, w.name FROM program_contains as c, workout as w WHERE program_id = "
+        + db.escape(programID) +" AND w.workout_id = c.workout_id";
+    const metaSQL = "SELECT * FROM program_meta WHERE program_id = " + db.escape(programID);
     db.query(programSQL+ ";" + metaSQL, (err, result) => {
         if (err) {
             console.log(err);
@@ -354,8 +353,8 @@ app.post("/workouts/create", (req, res) =>{
     const id = req.body.id
     const day = req.body.day;
 
-    const sql = "INSERT INTO workout (workout_id, name, creator_user_name, day) VALUES ('" + id + "', ' "
-        + workoutName + "', '" + username + "','"+ day + "' )"
+    const sql = "INSERT INTO workout (workout_id, name, creator_user_name, day) VALUES (" + db.escape(id) + ",  "
+        + db.escape(workoutName) + ", " + db.escape(username) + ","+ db.escape(day) + " )";
     db.query(sql, (err, result) => {
         if (err){
             // handle duplicate names;
@@ -385,8 +384,9 @@ app.post("/api/addSet", (req,res)=>{
     
 
     console.log(workoutID);
-    const sql= "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num, set_id) VALUES ('"
-        + workoutID + "', '" + move_name+ "'," + rep_cont + "," + repetition + "," + set_num + ", '" + id + "')";
+    const sql= "INSERT INTO `set` (workout_id, move_name, rep_count, repetition, set_num, set_id) VALUES ("
+        + db.escape(workoutID) + ", " + db.escape(move_name)+ "," + db.escape(rep_cont) + "," + db.escape(repetition)
+        + "," + db.escape(set_num) + ", " + db.escape(id) + ")";
     db.query(sql, (err, result)=>{
         if (err){
             return res.json({status: "error"})
@@ -409,8 +409,8 @@ app.post("/programs/create", (req, res) =>{
 
     function makeProgram(){
         const programID = makeID(20);
-        const sql = "INSERT INTO program (program_id, program_name, program_creator, description) VALUES ('"
-            + programID + "', '" + programName + "', '" + creator + "', '"+ description + "')"
+        const sql = "INSERT INTO program (program_id, program_name, program_creator, description) VALUES ("
+            + db.escape(programID) + ", " + db.escape(programName) + ", " + db.escape(creator) + ", "+ db.escape(description) + ")"
         db.query(sql, (err, result) =>{
             if(err){
                 if (err.errno === 1062){
@@ -427,7 +427,8 @@ app.post("/programs/create", (req, res) =>{
                 for(let i=0; i<workouts.length;i++){
                     let id = workouts[i];
                     let dayOf=i+1;
-                    let workoutsSQL = "INSERT INTO program_contains (program_id, workout_id, day_of) VALUES ('"+programID+"','"+id+"',"+dayOf+")";
+                    let workoutsSQL = "INSERT INTO program_contains (program_id, workout_id, day_of) " +
+                        "VALUES ("+db.escape(programID)+","+db.escape(id)+","+db.escape(dayOf)+")";
                     db.query(workoutsSQL, (err, result) =>{
                         if (err) {
                             console.log(err);
@@ -453,10 +454,10 @@ app.post("/messages/creategroup", (req, res) =>{
     // function to run again in case of duplicate user ID
     function makeMessageGroup(){
         const id = makeID(20)
-        const sql = "INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES ('" + id + "', '"
-            + name + "', '" + username + "', '" + now() + "')"
+        const sql = "INSERT INTO message_group (group_id, group_name, creator, creation_time) VALUES (" + db.escape(id) + ", "
+            + db.escape(name) + ", " + db.escape(username) + ", " + db.escape(now) + ")";
         const adminSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date, admin_level) VALUES " +
-            "('" + id + "', '" + username + "', '" + now() + "', 3)";
+            "(" + db.escape(id) + ", " + db.escape(username) + ", " + db.escape(now) + ", 3)";
         db.query(sql, (err, result) =>{
             if(err){
                 if (err.errno === 1062){
@@ -493,9 +494,9 @@ app.get("/messages/:groupID", (req,res) =>{
     const groupID = req.params['groupID'];
     const username = req.headers['username'];
 
-    const membersSQl="SELECT user_name FROM message_group_member WHERE group_ID = '" + groupID + "'";
-    const sql = "SELECT content, sender, send_time FROM message WHERE group_id = '" + groupID + "' AND '"
-        + username + "' in (" + membersSQl + ") ORDER BY send_time DESC";
+    const membersSQl="SELECT user_name FROM message_group_member WHERE group_ID = " + db.escape(groupID);
+    const sql = "SELECT content, sender, send_time FROM message WHERE group_id = " + db.escape(groupID) + " AND "
+        + db.escape(username) + " in (" + membersSQl + ") ORDER BY send_time DESC";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -514,8 +515,8 @@ app.post("/programs/start/:programID", (req,res) =>{
     const username = req.headers['username'];
 
     // check to see if a user is already doing the program
-    const checkSQL = "SELECT * from completing_program WHERE program_id = '"
-        + programID + "' AND user_name = '" + username + "' and completed = 0";
+    const checkSQL = "SELECT * from completing_program WHERE program_id = "
+        + db.escape(programID) + " AND user_name = " + db.escape(username) + " and completed = 0";
     db.query(checkSQL, (err1, result1)=>{
         if(err1){
             console.log(err1);
@@ -523,8 +524,8 @@ app.post("/programs/start/:programID", (req,res) =>{
         }
         // if user is not currently doing that program, start the program
         else if (result1[0]=== undefined){
-            const sql = "INSERT INTO completing_program (program_id, user_name, date_started) VALUES ('"
-                + programID + "','"+ username + "','" + now() + "')";
+            const sql = "INSERT INTO completing_program (program_id, user_name, date_started) VALUES ("
+                + db.escape(programID) + ","+ db.escape(username) + "," + db.escape(now) + ")";
             db.query(sql, (err, result)=>{
                 if (err) {
                     console.log(err);
@@ -547,7 +548,7 @@ app.get("/today", (req, res) =>{
     const username = req.headers['username'];
 
     const sql ="SELECT w.*, m.program_id as program_id, m.program_name as program_name FROM program_contains as c, " +
-        "workout as w, (SELECT * FROM completing_program WHERE user_name = '" + username +"' AND completed = 0) as p," +
+        "workout as w, (SELECT * FROM completing_program WHERE user_name = " + db.escape(username) +" AND completed = 0) as p," +
         " program as m WHERE c.day_of = p.day_of_program AND c.program_id=p.program_id and c.workout_id=w.workout_id " +
         "AND m.program_id = c.program_id"
     db.query(sql, (err, result)=>{
@@ -565,7 +566,7 @@ app.get("/today", (req, res) =>{
 // find all sets in a workout
 app.get("/workouts/:workoutID", (req,res) =>{
     const workoutID = req.params["workoutID"];
-    const sql = "SELECT set_num, move_name, rep_count, repetition FROM `set` WHERE workout_id = '" + workoutID + "'";
+    const sql = "SELECT set_num, move_name, rep_count, repetition FROM `set` WHERE workout_id = " + db.escape(workoutID);
 
     db.query(sql, (err, result) =>{
         if (err) {
@@ -601,10 +602,10 @@ app.post("/api/messages/addmember/:groupID", (req,res) =>{
     const username= req.header['username'];
     const targetUser = req.body.targetuser
 
-    const checkSQL="SELECT * FROM message_group_member WHERE group_id = '" + groupID + "' AND user_name='" + targetUser + "'";
+    const checkSQL="SELECT * FROM message_group_member WHERE group_id = " + db.escape(groupID) + " AND user_name=" + db.escape(targetUser);
     const insertSQL = "INSERT INTO message_group_member (group_ID, user_name, join_date) " +
-        "SELECT '" + groupID + "', '" + targetUser + "', '" + now() + "' FROM message_group_member " +
-        "WHERE '"+ username + "' = user_name AND group_ID = '" + groupID + "' AND admin_level>=2";
+        "SELECT " + db.escape(groupID) + ", " + db.escape(targetUser) + ", " + db.escape(now) + " FROM message_group_member " +
+        "WHERE "+ db.escape(username) + " = user_name AND group_ID = " + db.escape(groupID) + " AND admin_level>=2";
     // check to see if user is already in the group
     db.query(checkSQL, (err, result)=>{
         if(err){
@@ -637,8 +638,8 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
         + "', '" + username + "', '" + now() + "')";
     // SQL for finding if the workout is a part of a program the USER is doing and if they're doing it on the day of the program
     const programIDSQL = "SELECT c.program_id FROM completing_program as c, program_contains as p WHERE " +
-        "c.program_id = p.program_id AND c.user_name = '"+ username +"' AND p.workout_id = '"+ workoutID+ "' " +
-        "AND c.day_of_program = p.day_of"
+        "c.program_id = p.program_id AND c.user_name = "+ db.escape(username) +" AND p.workout_id = "+ db.escape(workoutID)+
+        " AND c.day_of_program = p.day_of"
     db.query(completionSQL, (err, result)=>{
         if(err){
             console.log(err);
@@ -654,8 +655,8 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
                 else if(result1[0] !== undefined){
                     let programID = result1[0]["program_id"];
                     // sql to update the program
-                    const updateSQL = "UPDATE completing_program SET day_of_program = day_of_program + 1 WHERE program_id = '"
-                        + programID + "' AND user_name = '" + username + "'";
+                    const updateSQL = "UPDATE completing_program SET day_of_program = day_of_program + 1 WHERE program_id = "
+                        + db.escape(programID) + " AND user_name = " + db.escape(username);
                     db.query(updateSQL, (err2, result2)=>{
                         if (err2) {
                             console.log(err2);
@@ -677,7 +678,7 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
 app.get("/api/findFrinedsWorkouts", (req,res)=>{
     const username=req.headers['username'];
 
-    const sql="SELECT * FROM completed_workout WHERE (user_name in ("+ findFriendsSQL(username)+ ") OR user_name='"+ username +"')";
+    const sql="SELECT * FROM completed_workout WHERE (user_name in ("+ findFriendsSQL(username)+ ") OR user_name="+ db.escape(username) +")";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -692,7 +693,7 @@ app.get("/api/findFrinedsWorkouts", (req,res)=>{
 app.get("/api/findFriendsMoves", (req,res)=>{
     const username=req.headers['username'];
 
-    const sql="SELECT * FROM completed_move WHERE (user_name in (" + findFriendsSQL(username) + ") OR user_name='"+ username +"')";
+    const sql="SELECT * FROM completed_move WHERE (user_name in (" + findFriendsSQL(username) + ") OR user_name="+ db.escape(username) +")";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -709,7 +710,7 @@ app.get("/api/getPosts", (req,res)=>{
     const username=req.headers['username'];
 
     const sql= "SELECT post.* FROM user_post as post WHERE (post.user_name in ("+ findFriendsSQL(username)
-        +") OR post.user_name='"+ username+"') ORDER BY post.created_at DESC";
+        +") OR post.user_name="+ db.escape(username)+") ORDER BY post.created_at DESC";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -726,9 +727,9 @@ app.get("/api/postComments", (req,res)=>{
     const username=req.headers['username'];
     const postID=req.body.postID;
 
-    const sql="SELECT c.* FROM post_comment c, user_post up WHERE c.post_id=up.post_id AND up.post_id='"+ postID +"' " +
-        "AND (up.user_name in (SELECT target_user FROM user_follow WHERE source_user='"+ username +"' AND target_user="+
-        "up.user_name AND approved=true) OR up.user_name= '"+ username+ "')";
+    const sql="SELECT c.* FROM post_comment c, user_post up WHERE c.post_id=up.post_id AND up.post_id="+ db.escape(postID) +
+        " AND (up.user_name in (SELECT target_user FROM user_follow WHERE source_user="+ db.escape(username) +" AND target_user="+
+        "up.user_name AND approved=true) OR up.user_name= "+ db.escape(username)+ ")";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -742,7 +743,6 @@ app.get("/api/postComments", (req,res)=>{
 })
 
 // Sends message to a message group
-// START HERE AND GO UP NICK
 app.post("/messages/:groupID" , (req,res) =>{
     
     const groupID = req.params.groupID;
@@ -750,9 +750,9 @@ app.post("/messages/:groupID" , (req,res) =>{
     const message = encrypt(req.body.message);
     const message_id=req.body.message_id
 
-    const insertSQL= "INSERT INTO message(group_id, content, sender, send_time, id) SELECT '" + groupID + "', '" + message +
-        "', '" + userName + "', '" + now() +"', '"+ message_id + "' FROM message_group_member WHERE user_name = '"
-        + userName + "' AND group_ID='"+ groupID + "'" ;
+    const insertSQL= "INSERT INTO message(group_id, content, sender, send_time, id) SELECT " + db.escape(groupID) + ", "
+        + db.escape(message) + ", " + db.escape(userName) + ", " + db.escape(now) +", "+ db.escape(message_id) + " FROM"
+        +" message_group_member WHERE user_name = " + db.escape(userName) + " AND group_ID="+ db.escape(groupID);
     db.query(insertSQL, async (err, result) => {
         if (err) {
             console.log(err);
