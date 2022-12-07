@@ -857,7 +857,7 @@ app.post("/api/acceptFriend", (req,res)=>{
 })
 
 // removes someone you're following or someone following you
-app.delete("/api/removeFriend", (req,res)=>{
+app.post("/api/removeFriend", (req,res)=>{
     const source=req.headers['username'];
     const target=req.body.target;
 
