@@ -54,13 +54,42 @@ export default function Feed() {
 
 		const data = await req.json()
 		if (data.status === 'ok') {
-            setExercises(data.exercises)
+            setExercises(data.exercises[0])
+            setWorkoutName(data.exercises[1][0].name)
             setShowWork(true)
 		} else {
 			alert(data.error)
 		}
 
   }
+
+//   async function addWorkout(event) {
+//     event.preventDefault();
+//     const id = uuidv4();
+//     const response = await fetch('http://localhost:5000/workouts/create', {
+//         method:'POST',
+//         headers: {
+//     'Content-Type': 'application/json',
+//             'username': username,
+            
+//   },
+//         body: JSON.stringify({
+//             name: name,
+//             day: day,
+//             id: id
+//         }),
+//     })
+//     const data = await response.json()
+
+//     if(data.status === 'error') {
+//         console.log('reached')
+//     }
+//     else {
+//         console.log('tes')
+//         alert('Workout added')
+//     }
+
+// }
 
     useEffect(() => {
       const username = localStorage.getItem('username')
@@ -96,7 +125,9 @@ export default function Feed() {
               <span className="postText">{d.message}</span>
               {d.workout_id != null && 
               <>
-            <button onClick={() => viewWorkout(d.workout_id)}>View Workout</button>
+              <br />
+              <br />
+            <Button onClick={() => viewWorkout(d.workout_id)}>View Workout</Button>
             <Modal show={showWork} onHide={handleCloseW}>
                     <Modal.Header closeButton>
                     <Modal.Title>{workoutName}</Modal.Title>
