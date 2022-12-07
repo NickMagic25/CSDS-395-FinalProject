@@ -46,7 +46,7 @@ export default function Navbar({changeUserName}) {
             </div>
             <div className="navbarRight">
                 <Link to="/workout" className="navbarLink">My Workouts</Link>
-                <span className="navbarLink">Friends</span>
+                <Link to="/friends" className="navbarLink">Friends</Link>
             </div>
             <div className="navbarIcons">
                 <form onSubmit={viewProfile}>

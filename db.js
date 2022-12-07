@@ -981,7 +981,7 @@ app.get("/api/allFriends",(req,res)=>{
     const source=req.headers['username'];
 
     const sql="SELECT target_user FROM user_follow WHERE source_user=" + db.escape(source) + " AND approved=true";
-    db.query(sql, [target], (err, result) =>{
+    db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
             res.send(null);
