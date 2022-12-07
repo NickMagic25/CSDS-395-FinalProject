@@ -936,6 +936,7 @@ app.get("/api/getUser/:target",(req,res)=> {
     const target = req.params['target'];
 
     const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name='" + target + "'";
+    console.log(sql);
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
@@ -946,7 +947,6 @@ app.get("/api/getUser/:target",(req,res)=> {
         }
         else {
             console.log(result);
-            fetch("")
             return res.json({status: 'ok', profile: result});
         }
     })
