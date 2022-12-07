@@ -229,7 +229,7 @@ app.get("/user/interactions/:userName", (req, res) => {
     else
         sql = "SELECT c.post_id FROM post_comment AS c WHERE c.user_name = " + db.escape(target)
             + " AND " + db.escape(target) + " IN "+ isFriendsSQL(self,target) + "; " +
-            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = '" + target + "' AND "+ db.escape(target) + " IN "
+            "SELECT p.post_id FROM post_like AS p WHERE p.user_name = " + db.escape(target) + " AND "+ db.escape(target) + " IN "
             + isFriendsSQL(self,target);
     db.query(sql, function (err, result){
         if (err) {
@@ -582,7 +582,7 @@ app.get("/workouts/:workoutID", (req,res) =>{
 
 app.get("/workouts/workoutName/:workoutID", (req,res) =>{
     const workoutID = req.params["workoutID"];
-    const sql = "SELECT name FROM workout WHERE workout_id = '" + workoutID + "'";
+    const sql = "SELECT name FROM workout WHERE workout_id = " + db.escape(workoutID) ;
 
     db.query(sql, (err, result) =>{
         if (err) {
@@ -634,8 +634,8 @@ app.post("/workouts/:workoutID/completed", (req, res) =>{
     const username = req.headers['username'];
 
     // SQL for completing the workout
-    const completionSQL="INSERT INTO completed_workout (workout_id, user_name, date_completed) VALUES ('" + workoutID
-        + "', '" + username + "', '" + now() + "')";
+    const completionSQL="INSERT INTO completed_workout (workout_id, user_name, date_completed) VALUES (" + db.escape(workoutID)
+        + ", " + db.escape(username) + ", " + db.escape(now) + ")";
     // SQL for finding if the workout is a part of a program the USER is doing and if they're doing it on the day of the program
     const programIDSQL = "SELECT c.program_id FROM completing_program as c, program_contains as p WHERE " +
         "c.program_id = p.program_id AND c.user_name = "+ db.escape(username) +" AND p.workout_id = "+ db.escape(workoutID)+
@@ -888,8 +888,8 @@ app.delete("/api/deleteWorkout", (req,res)=>{
     const username=req.headers['username'];
     const workout_id=req.body.workoutID;
 
-    const sql="DELETE FROM 'set' WHERE workout_id='"+ workout_id +
-        "' AND true IN (SELECT true FROM workout WHERE workout_id= "+ db.escape(workout_id) +" AND creator_user_name="+ db.escape(username)
+    const sql="DELETE FROM 'set' WHERE workout_id="+ db.escape(workout_id) +
+        " AND true IN (SELECT true FROM workout WHERE workout_id= "+ db.escape(workout_id) +" AND creator_user_name="+ db.escape(username)
     +"); DELETE FROM workout WHERE workout_id="+ db.escape(workout_id) +" AND creator_user_name="+ db.escape(username);
 
     return runSQL_NoResult(sql,res);
