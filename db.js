@@ -926,7 +926,7 @@ app.post("/api/makePost", (req, res)=>{
     const workout_id=req.body.workoutID
 
     const sql= "INSERT INTO user_post (post_id, user_name, message, created_at, workout_ID) VALUES ('"+ post_id + "', '"
-        + username + "', '" + text + "',' " + now() + "', '"+ workout_id +"')";
+        + username + "', '" + text + "',' " + now() + "', "+ workout_id +")";
 
     return runSQL_NoResult(sql,res);
 })
@@ -979,7 +979,7 @@ app.get("/api/isFriend/:target", (req,res)=>{
             res.send(null);
         }
         else if(result[0]===undefined){
-            return res.json({status:'unable to access profile'});
+            return res.json({status:'unable to access profile', isFriend:JSON.stringify([{TRUE:0}])});
         }
         else {
             console.log(result);
