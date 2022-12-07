@@ -2,6 +2,8 @@ import React, {useEffect, useState} from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import {ProfileInfo} from "../Components/profileInfo/ProfileInfo";
 import Navbar from "../Components/navbar/Navbar";
+import axios from "axios";
+
 export default function UserProfile(props) {
     const history = useHistory()
     const token = localStorage.getItem('jwtToken')
@@ -10,9 +12,10 @@ export default function UserProfile(props) {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [userName, setUserName] = useState("")
-  const [isFirstLoad, setIsFirstLoad] = useState("true");
+    const[onUser, setOnUser] = useState(false);
 
   async function getProfileInfo() {
+    console.log(userName);
     const req = await fetch('http://localhost:5000/api/getUser/' + userName, {
 			headers: {
 				'username': localStorage.getItem('username'),
@@ -30,12 +33,6 @@ export default function UserProfile(props) {
     }
 
     useEffect(() => {
-        // if (location.firstLoad) {
-        //     window.location.reload();
-        //     location.firstLoad = false;
-        // } else {
-        //     setIsFirstLoad(false)
-        // }    
         const token = localStorage.getItem('jwtToken')
         const username = localStorage.getItem('username')
         if(token) {
@@ -45,7 +42,7 @@ export default function UserProfile(props) {
             }
             else {
                 setUserName(location.state)
-                return;
+                
             }
         }
         else{
@@ -54,22 +51,47 @@ export default function UserProfile(props) {
     }, [])
 
     useEffect(() => {
-       
+        if(localStorage.getItem('username') === userName) {
+            setOnUser(true);
+        }
+        else {
+            setOnUser(false);
+        }
         getProfileInfo()
                 return;
         
     }, [userName])
 
     
-
-    
+    async function follow() {
+        const req = await axios.post('http://localhost:5000/api/addFriend', {
+			headers: {
+				'username': localStorage.getItem('username'),
+			},
+            body: {
+                "target" : userName,
+            }
+		})
+        console.log(req);
+        //const data = await req.json()
+        // if (data.status === 'ok') {
+        //     console.log("added");
+        // } else {
+        //     alert(data.error)
+        // }
+        // return;
+    }
 
   return (
     <>
     <div>
         <Navbar changeUserName={setUserName}/>
         <div className="userProfile">
-        <button>Follow</button>
+        {!onUser && 
+            <button onClick={follow}>Follow</button>
+        }
+        
+        
         <div className="firstName">{firstName}</div>
         <div className="lastName">{lastName}</div>
         <div className="userName">{userName}</div>
