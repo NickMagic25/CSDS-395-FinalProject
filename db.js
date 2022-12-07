@@ -976,7 +976,7 @@ app.get("/api/isFriend/:target", (req,res)=>{
     const source=req.headers["username"];
     const target = req.params['target'];
 
-    const sql= "SELECT DISTINCT TRUE WHERE '" + target + "' IN ("+ isFriendsSQL(source,target) +")";
+    const sql= "SELECT DISTINCT TRUE AS r WHERE '" + target + "' IN ("+ isFriendsSQL(source,target) +")";
 
     db.query(sql, (err, result) =>{
         if (err) {
@@ -984,7 +984,7 @@ app.get("/api/isFriend/:target", (req,res)=>{
             res.send(null);
         }
         else if(result[0]===undefined){
-            return res.json({status:'unable to access profile', isFriend:JSON.stringify([{TRUE:0}])});
+            return res.json({status:'unable to access profile', isFriend:JSON.stringify([{r:0}])});
         }
         else {
             console.log(result);
