@@ -744,6 +744,11 @@ app.post("/messages/:groupID" , (req,res) =>{
             console.log(result);
             const send = await fetch(mailAPIURL + '/api/message', {
                 method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'username': userName,
+
+                },
                 body: JSON.stringify({
                     username:userName,
                     groupID: groupID,

@@ -10,7 +10,7 @@ function encrypt(text){
 
 function decrypt(data){
     try{
-    return CryptoJS.enc.Base64.parse(data).toString(CryptoJS.enc.Utf8);
+        return CryptoJS.enc.Base64.parse(data).toString(CryptoJS.enc.Utf8);
     }
     catch (err){
         console.log(err);
@@ -74,7 +74,8 @@ function sqlHandler(sql, message, subject, res){
 }
 
 app.post("/api/message", (req,res)=>{
-    const senderUserName = req.headers['username'];
+    console.log(req.body);
+    const senderUserName = req.body.username;
     const groupID = req.body.groupID;
     const groupName= req.body.groupName;
     const message = req.body.message;
@@ -83,7 +84,7 @@ app.post("/api/message", (req,res)=>{
 
     const sql = "SELECT email FROM user WHERE user_name in (SELECT user_name FROM message_group_member WHERE " +
         "group_ID= '"+ groupID +"' and message_group_member.user_name!='"+ senderUserName +"')";
-    return sqlHandler(sql, message,subject,res);
+    return sqlHandler(sql, decrypt(message),subject,res);
 })
 
 app.post("/api/comment", (req,res)=>{
@@ -95,7 +96,7 @@ app.post("/api/comment", (req,res)=>{
     const message=user + " said " + comment;
 
     const sql="SELECT u.email FROM user u, user_post up WHERE u.user_name=up.user_name AND up.post_id='"+ postID +"'";
-    return sqlHandler(sql,message,subject,res);
+    return sqlHandler(sql,decrypt(message),subject,res);
 })
 
 
