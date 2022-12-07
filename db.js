@@ -968,3 +968,24 @@ app.post("/api/setPublicAccount",(req,res)=>{
     const sql="UPDATE user SET private_account=false WHERE user_name='"+ username +"'";
     return runSQL_NoResult(sql,res);
 })
+
+app.get("/api/isFriend/:target", (req,res)=>{
+    const source=req.headers["username"];
+    const target = req.params['target'];
+
+    const sql= "SELECT TRUE WHERE target IN ("+ isFriendsSQL(source,target) +")";
+
+    db.query(sql, (err, result) =>{
+        if (err) {
+            console.log(err);
+            res.send(null);
+        }
+        else if(result[0]===undefined){
+            return res.json({status:'unable to access profile'});
+        }
+        else {
+            console.log(result);
+            return res.json({status: 'ok', isFriend: result});
+        }
+    })
+})
