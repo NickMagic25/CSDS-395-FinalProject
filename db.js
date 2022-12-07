@@ -15,7 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 const port = '5000'
-const mailAPIURL="http://localhost:5002";
+const mailAPIURL="http://localhost:6000";
 
 app.listen(port, () => {
     console.log("Server started on port " + port + "!");
