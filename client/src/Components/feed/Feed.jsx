@@ -3,6 +3,8 @@ import Write from "../write/Write"
 import React, {useEffect, useState, useReducer} from 'react'
 import {Link} from 'react-router-dom'
 import {Navbar, Container, Button, Form, Card, Modal} from 'react-bootstrap'
+import { v4 as uuidv4 } from 'uuid';
+
 
 
 export default function Feed() {
@@ -63,32 +65,57 @@ export default function Feed() {
 
   }
 
-//   async function addWorkout(event) {
-//     event.preventDefault();
-//     const id = uuidv4();
-//     const response = await fetch('http://localhost:5000/workouts/create', {
-//         method:'POST',
-//         headers: {
-//     'Content-Type': 'application/json',
-//             'username': username,
+  async function addWorkout(event) {
+    event.preventDefault();
+    const username = localStorage.getItem('username')
+    const id = uuidv4();
+    const response = await fetch('http://localhost:5000/workouts/create', {
+        method:'POST',
+        headers: {
+    'Content-Type': 'application/json',
+            'username': username,
             
-//   },
-//         body: JSON.stringify({
-//             name: name,
-//             day: day,
-//             id: id
-//         }),
-//     })
-//     const data = await response.json()
+  },
+        body: JSON.stringify({
+            name: workoutName,
+            day: '',
+            id: id
+        }),
+    })
+    const data = await response.json()
 
-//     if(data.status === 'error') {
-//         console.log('reached')
-//     }
-//     else {
-//         console.log('tes')
-//         alert('Workout added')
-//     }
+    if(data.status === 'error') {
+        console.log('reached')
+    }
+    else {
+        console.log('tes')
+        alert('Workout added')
+        // anotherFunction(id, username)
+    }
 
+}
+
+// function anotherFunction(id, username) {
+//         const eId = uuidv4();
+//         exercises.map(e => (
+//             fetch('http://localhost:5000/api/addSet', {
+//               method:'POST',
+//               headers: {
+//           'Content-Type': 'application/json',
+//                   'username': username,
+                  
+//         },
+//               body: JSON.stringify({
+//                   workoutId: id,
+//                   moveName: e.move_name,
+//                   set: e.repetition,
+//                   rep: e.rep_count,
+//                   set_id: eId,
+//                   setNum: -1
+//               }),
+//           })
+//         )) 
+//   return;
 // }
 
     useEffect(() => {
@@ -139,6 +166,10 @@ export default function Feed() {
                         
                     </Modal.Body>
                     <Modal.Footer>
+                    <Button variant="secondary" onClick={addWorkout}>
+                        Add Workout
+                    </Button>
+
                     <Button variant="secondary" onClick={handleCloseW}>
                         Close
                     </Button>

@@ -90,7 +90,7 @@ export default function Workout() {
 
     //name of workout
     const [name, setName] = useState('')
-    const [day, setDay] = useState('')
+    const [day, setDay] = useState('Monday')
 
 
     //states for view workout modal

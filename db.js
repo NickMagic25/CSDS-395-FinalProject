@@ -389,6 +389,7 @@ app.post("/api/addSet", (req,res)=>{
         + "," + db.escape(set_num) + ", " + db.escape(id) + ")";
     db.query(sql, (err, result)=>{
         if (err){
+            console.log(err)
             return res.json({status: "error"})
             // run again with same base params, new setID will be randomly generated
         }
