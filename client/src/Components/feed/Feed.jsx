@@ -31,6 +31,7 @@ export default function Feed() {
 
 
   async function populateFeed() {
+    console.log('reached')
     const req = await fetch('http://localhost:5000/api/getPosts', {
 			headers: {
 				'username': localStorage.getItem('username'),

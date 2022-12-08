@@ -26,6 +26,7 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^5.0.1",
+    "reactstrap": "^9.1.5",
     "redux": "^4.2.0",
     "redux-thunk": "^2.4.1",
     "socket.io-client": "^4.5.4",

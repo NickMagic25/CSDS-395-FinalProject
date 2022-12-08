@@ -232,6 +232,8 @@ export default function Workout() {
             console.log('reached')
         }
         else {
+            const newWorkouts = workouts.filter(item => item.workout_id !== id);
+            setWorkouts(newWorkouts)
             alert('EWorkout deleted')
         }
 
