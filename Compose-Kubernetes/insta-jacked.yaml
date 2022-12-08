@@ -1,0 +1,43 @@
+### Selector
+apiVersion: v1
+kind: Service
+metadata:
+  name: insta-jacked
+spec:
+  selector:
+    app: insta-jacked
+  ports:
+    - port: 5000
+      name: "insta-jacked"
+      targetPort: 5000
+    - port: 6000
+      name: "ij-sendgrid"
+      targetPort: 6000
+  type: LoadBalancer
+---
+#### Pod
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: insta-jacked
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: insta-jacked
+  template:
+    metadata:
+      labels:
+        app: insta-jacked
+    spec:
+      containers:
+        - name: server
+          image: insta-jacked
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+        - name: email-notis
+          image: ij-sendgrid
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 6000
