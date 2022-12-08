@@ -214,6 +214,29 @@ export default function Workout() {
 
     }
 
+    async function deleteWorkout(id) {
+        const response = await fetch('http://localhost:5000/api/deleteWorkout', {
+            method:'DELETE',
+            headers: {
+				'Content-Type': 'application/json',
+                'username': username,
+                
+			},
+            body: JSON.stringify({
+                workoutID: id, 
+            }),
+        })
+        const data = await response.json()
+
+        if(data.status === 'error') {
+            console.log('reached')
+        }
+        else {
+            alert('EWorkout deleted')
+        }
+
+    }
+
   return (
     <>
     <Navbar />
@@ -253,7 +276,7 @@ export default function Workout() {
                 <Card.Body>
                 <Card.Title>
                     {d.name} 
-                    <CloseButton className="float-end"/>
+                    <CloseButton onClick={() => deleteWorkout(d.workout_id)} className="float-end"/>
                         
                 </Card.Title>
                 <Card.Text className="me-3">
