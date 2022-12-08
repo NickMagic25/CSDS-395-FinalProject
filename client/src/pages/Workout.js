@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react'
 import { useHistory } from 'react-router-dom'
 import { decodeToken } from "react-jwt";
-import {Navbar, Container, Button, Form, Card, Modal} from 'react-bootstrap'
+import {Container, Button, Form, Card, Modal, CloseButton, Col, Row} from 'react-bootstrap'
 import { v4 as uuidv4 } from 'uuid';
+import Navbar from "../Components/navbar/Navbar";
+
 
 
 
@@ -52,7 +54,7 @@ export default function Workout() {
 
 		const data = await req.json()
 		if (data.status === 'ok') {
-            setExercises(data.exercises)
+            setExercises(data.exercises[0])
             setShowWork(true)
             console.log(data.exercises)
 		} else {
@@ -213,14 +215,11 @@ export default function Workout() {
     }
 
   return (
+    <>
+    <Navbar />
+
     <div>
-        <Navbar bg="primary" expand="lg">
-            <Container className="justify-content-center">
-                <Navbar.Brand className='text-white'>Welcome !</Navbar.Brand>
-            </Container>
-            <Button variant="danger" onClick={logOff}>Log Off</Button>
         
-        </Navbar>
         <Form onSubmit={addWorkout}>
             <Form.Group className="mb-3">
                 <Form.Label>Workout Name</Form.Label>
@@ -229,18 +228,34 @@ export default function Workout() {
 
             <Form.Group className="mb-3">
                 <Form.Label>Day of Workout</Form.Label>
-                <Form.Control className="position-relative" type="text" placeholder="Enter Day of Workout" onChange={(e) => setDay(e.target.value)} required/>
+                <Form.Select aria-label="Default select example" onChange={(e) => setDay(e.target.value)} required>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+
+                </Form.Select>
             </Form.Group>
             <Button variant="primary" type="submit" className="mb-3">
             Add Custom Workout
             </Button>
   
         </Form>
+        <Row lg={3}>
 
         {workouts.map(d => (
-            <Card style={{ width: '18rem' }}>
+            <Col className="d-flex">
+
+            <Card className= "mb-5" style={{ width: '18rem' }}>
                 <Card.Body>
-                <Card.Title>{d.name}</Card.Title>
+                <Card.Title>
+                    {d.name} 
+                    <CloseButton className="float-end"/>
+                        
+                </Card.Title>
                 <Card.Text className="me-3">
                 {d.day} 
                  </Card.Text>
@@ -318,10 +333,13 @@ export default function Workout() {
 
                 </Card.Body>
             </Card>
-        ))}
+            </Col>
 
+        ))}
+        </Row>
 
     </div>
+    </>
     
   )
 }

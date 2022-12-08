@@ -14,6 +14,10 @@ export default function Navbar({changeUserName}) {
         history.push('/login');
     }
 
+    function goHome() {
+        history.push('/dashboard')
+    }
+
     function viewProfile() {
         history.push({pathname: '/userProfile', state: localStorage.getItem('username')});
     }
@@ -34,7 +38,7 @@ export default function Navbar({changeUserName}) {
     return (
         <div className="navbarContainer">
             <div className="navbarLeft">
-                <span className="logo">InstaJacked</span>
+                <span onClick={goHome} className="logo">InstaJacked</span>
             </div>
             <div className="navbarCenter">
                 <div className="searchbar">
