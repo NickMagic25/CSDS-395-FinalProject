@@ -361,7 +361,7 @@ app.post("/workouts/create", (req, res) =>{
             if (err.errno === 1062){
                 console.log("Duplicate entry");
                 // run again with same base params, workoutID will be randomly generated
-                makeWorkout();
+                return res.json({status:"duplicate"});
             }
             else {
                 console.log(err);
