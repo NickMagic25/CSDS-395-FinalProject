@@ -998,13 +998,14 @@ app.get("/api/allFriends",(req,res)=>{
 })
 
 app.post("/api/updateUser", (req,res)=>{
+    console.log(req.body);
     const source=req.headers['username'];
     const bench=req.body.bench;
     const deadlift= req.body.deadlift;
     const squat= req.body.squat;
     const weight= req.body.weight;
-
-    const sql="UPDATE user SET bench=" + db.escape(bench) + " deadlift=" + db.escape(deadlift) + " squat="
-        + db.escape(squat) + " weight = "+ weight +"WHERE user_name=" + db.escape(source);
+    const sql="UPDATE user SET bench=" + db.escape(bench) + ", deadlift=" + db.escape(deadlift) + ", squat="
+        + db.escape(squat) + ", weight = "+ weight +" WHERE user_name=" + db.escape(source);
+    console.log(sql);
     return runSQL_NoResult(sql,res);
 })
