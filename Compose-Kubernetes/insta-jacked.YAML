@@ -3,15 +3,15 @@ kind: Pod
 metadata:
   name: insta-jacked
 spec:
+  hostNetwork: true
   containers:
     - name: server
-      image: insta-jacked
+      image: insta-jacked:latest
       imagePullPolicy: Never
       ports:
         - containerPort: 5000
     - name: email-notis
-      image: ij-sendgrid
+      image: ij-sendgrid:latest
       imagePullPolicy: Never
       ports:
         - containerPort: 6000
-  restartPolicy: Never
