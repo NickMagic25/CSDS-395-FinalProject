@@ -1,4 +1,4 @@
-import Navbar from "../Components/navbar/Navbar";
+import LandingNavbar from "../Components/landingNavBar/LandingNavBar";
 import {Container, Col, Row} from 'react-bootstrap'
 import styles from './HomePage.module.css'
 import Deadlift from '../deadlift.png'
@@ -7,7 +7,7 @@ import Social from '../social.jpeg'
 
 function HomePage(){
     return <section>
-      <Navbar/>
+      <LandingNavbar/>
       <Container>
         <Row>
           <Col>
