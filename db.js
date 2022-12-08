@@ -890,9 +890,9 @@ app.delete("/api/deleteWorkout", (req,res)=>{
     const username=req.headers['username'];
     const workout_id=req.body.workoutID;
 
-    const sql="DELETE FROM 'set' WHERE workout_id="+ db.escape(workout_id) +
-        " AND true IN (SELECT true FROM workout WHERE workout_id= "+ db.escape(workout_id) +" AND creator_user_name="+ db.escape(username)
-    +"); DELETE FROM workout WHERE workout_id="+ db.escape(workout_id) +" AND creator_user_name="+ db.escape(username);
+    const sql="DELETE FROM `set` WHERE workout_id="+ db.escape(workout_id) 
+    +"; DELETE FROM user_post WHERE workout_id="+ db.escape(workout_id)
+    +"; DELETE FROM workout WHERE workout_id="+ db.escape(workout_id);
 
     return runSQL_NoResult(sql,res);
 })
@@ -902,7 +902,7 @@ app.delete("/api/deleteSet", (req,res)=>{
     const workout_id=req.body.workoutID;
     const set_id=req.body.setID;
 
-    const sql="DELETE FROM 'set' WHERE set_id="+ db.escape(set_id) +" AND true IN (SELECT true FROM workout WHERE workout_id= "
+    const sql="DELETE FROM 'set' WHERE set_id="+ db.escape(set_id) +" AND true IN (SELECT true FROM workout WHERE workout.workout_id= "
         + db.escape(workout_id) +" AND creator_user_name="+ db.escape(username) +")";
 
     return runSQL_NoResult(sql,res);
