@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { Form, InputGroup, Button } from 'react-bootstrap'
-import { useMessages } from '../contexts/MessagesProvider'
+import { useMessages } from '../../contexts/chat/MessagesProvider'
 
 export default function OpenMessage() {
     

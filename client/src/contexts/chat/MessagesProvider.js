@@ -1,6 +1,6 @@
 import React, {useContext, useEffect, useState, useCallback} from 'react'
 //import Contacts from '../components/Contacts';
-import LocalStorage from '../hooks/LocalStorage';
+import LocalStorage from '../../hooks/LocalStorage';
 import { useContacts } from './ContactsProvider';
 import { useSocket } from './SocketProvider';
 
