@@ -6,8 +6,12 @@ import Social from '../social.jpeg'
 
 
 function HomePage(){
-    return <section>
+    return (
+      <>
       <LandingNavbar/>
+
+    <section>
+
       <Container>
         <Row>
           <Col>
@@ -29,9 +33,11 @@ function HomePage(){
           </Col>
         </Row>
       </Container>
-  
+  </section>
+  </>
+    )
        
-    </section>;
+
 }
 
 export default HomePage; 

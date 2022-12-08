@@ -55,6 +55,7 @@ class Register extends Component {
     const emailStyle = { color: "black", fontSize: "1.5em", margin: "1em", "margin-left" :"0em"}
     const nameStyle = { color: "white", fontSize: "1.5em", margin: "1em" }
     return (
+      <div className="registerBody">
       <div className="screen-1">
         <h1 style={{ color: "black" }} align="middle">
           Sign Up
@@ -164,6 +165,7 @@ class Register extends Component {
         <Link to="/login" className="btn-flat waves-effect">
           Already have an account? Sign in
         </Link>
+      </div>
       </div>
     );
   }
