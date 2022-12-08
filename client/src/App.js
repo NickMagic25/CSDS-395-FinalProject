@@ -14,7 +14,7 @@ import { Provider } from "react-redux";
 import store from "./store";
 import "bootstrap/dist/css/bootstrap.min.css";
 import UserProfile from "./pages/userProfile";
-import Chat from './Components/chat'
+import Chat from './pages/Chat'
 function App() {
   return (
     <Provider store={store}>
