@@ -34,8 +34,12 @@ export default function FriendsPage(props) {
             <Navbar />
             <div className="friends">
                 {friends.map(d => (
-                <li>{d.target_user}{d.first_name}{d.last_name}</li>
-        
+                <li>{d.target_user}{d.first_name}{d.last_name}
+                {d.bench == null? 0:d.bench}
+                {d.deadlift == null? 0:d.deadlift}
+                {d.squat == null? 0:d.squat}
+                {d.weight == null? 0:d.weight}
+                </li>
                 ))}
             </div>
         </div>

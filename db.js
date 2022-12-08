@@ -983,8 +983,8 @@ app.get("/api/isFriend/:target", (req,res)=>{
 app.get("/api/allFriends",(req,res)=>{
     const source=req.headers['username'];
 
-    const sql="SELECT uf.target_user, u.first_name, u.last_name FROM user_follow uf, user u WHERE uf.source_user="
-        + db.escape(source) + " AND uf.approved=true AND uf.approved=true AND u.user_name=uf.target_user";
+    const sql="SELECT uf.target_user, u.first_name, u.last_name, u.bench, u.squat, u.deadlift, u.weight FROM user_follow uf, user u WHERE uf.source_user="
+        + db.escape(source) + " AND uf.approved=true AND u.user_name=uf.target_user";
     db.query(sql, (err, result) =>{
         if (err) {
             console.log(err);
