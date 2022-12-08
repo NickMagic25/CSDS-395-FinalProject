@@ -30,11 +30,14 @@ export default function FriendsPage(props) {
     }, [])
 
     return (
-        <div className="friends">
-            {friends.map(d => (
-              <li>{d.target_user}</li>
-    
-            ))}
+        <div>
+            <Navbar />
+            <div className="friends">
+                {friends.map(d => (
+                <li>{d.target_user}{d.first_name}{d.last_name}</li>
+        
+                ))}
+            </div>
         </div>
       )
 }

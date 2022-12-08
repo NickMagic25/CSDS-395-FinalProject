@@ -1,9 +1,14 @@
+import "./register.css";
 import React, { Component } from "react";
 import { Link, withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { registerUser } from "../../actions/authActions";
 import classnames from "classnames";
+import {FaUserCircle} from 'react-icons/fa';
+import {RiLockPasswordFill} from "react-icons/ri";
+import {MdEmail} from "react-icons/md";
+ 
 class Register extends Component {
   constructor() {
     super();
@@ -46,15 +51,18 @@ class Register extends Component {
   };
   render() {
     const { errors } = this.state;
+    const style = { color: "black", fontSize: "1.5em", margin: "1em" }
+    const emailStyle = { color: "black", fontSize: "1.5em", margin: "1em", "margin-left" :"0em"}
+    const nameStyle = { color: "white", fontSize: "1.5em", margin: "1em" }
     return (
-      <div className="registerContainer">
-        <Link to="/dashboard" className="btn-flat waves-effect">
-          Already have an account? Sign in
-        </Link>
-        <h1 style={{ color: "#A6CEB6" }} align="middle">
+      <div className="screen-1">
+        <h1 style={{ color: "black" }} align="middle">
           Sign Up
         </h1>
         <form align="middle" onSubmit={this.onSubmit}>
+        <div className="username"> 
+        <div className="sec-2">
+        <FaUserCircle  style={nameStyle}/>
         <label>First Name: </label>
           <input
             id="firstName"
@@ -67,9 +75,14 @@ class Register extends Component {
             })}
           ></input>
           <span className="red-text">{errors.firstName}</span>
+          </div>
+          </div>
           <br />
           <br />
 
+          <div className="username"> 
+          <div className="sec-2">
+          <FaUserCircle  style={nameStyle}/>
           <label>Last Name: </label>
           <input
             id="lastName"
@@ -82,9 +95,14 @@ class Register extends Component {
             })}
           ></input>
           <span className="red-text">{errors.lastName}</span>
+          </div>
+          </div>
           <br />
           <br />
 
+          <div className="username"> 
+          <div className="sec-2">
+            <MdEmail style={emailStyle}/>
           <label>Email: </label>
           <input
             onChange={this.onChange}
@@ -97,8 +115,14 @@ class Register extends Component {
             })}
           ></input>
           <span className="red-text">{errors.email}</span>
+          </div>
+          </div>
           <br />
           <br />
+
+          <div className="username"> 
+          <div className="sec-2">
+          <FaUserCircle  style={style}/>
           <label>Username: </label>
           <input
             id="username"
@@ -111,8 +135,14 @@ class Register extends Component {
             })}
           ></input>
           <span className="red-text">{errors.username}</span>
+          </div>
+          </div>
           <br />
           <br />
+
+          <div className="username"> 
+          <div className="sec-2">
+          <RiLockPasswordFill style={style}/>
           <label>Password: </label>
           <input
             id="password"
@@ -125,9 +155,11 @@ class Register extends Component {
             })}
           ></input>
           <span className="red-text">{errors.password}</span>
+          </div>
+          </div>
           <br />
           <br />
-          <input type="submit" value="enter"></input>
+          <input type="submit" value="submit"  className="login"></input>
         </form>
         <Link to="/login" className="btn-flat waves-effect">
           Already have an account? Sign in

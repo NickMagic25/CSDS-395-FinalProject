@@ -1,9 +1,13 @@
+import "./login.css";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { loginUser } from "../../actions/authActions";
 import classnames from "classnames";
+import {FaUserCircle} from 'react-icons/fa';
+import {RiLockPasswordFill} from "react-icons/ri";
+
 
 class Login extends Component {
   constructor() {
@@ -46,12 +50,17 @@ class Login extends Component {
   };
   render() {
     const { errors } = this.state;
+    const style = { color: "black", fontSize: "1.5em", margin: "1em" }
     return (
-      <div className="container">
-        <h1 style={{ color: "#A6CEB6" }} align="middle">
+      <div className="screen-1">
+        <h1 style={{ color: "black" }} align="middle">
           Login form
         </h1>
         <form align="middle" onSubmit={this.onSubmit}>
+          
+        <div className="username"> 
+        <div className="sec-2">
+        <FaUserCircle  style={style}/>
           <label>Username: </label>
           <input
             id="username"
@@ -67,8 +76,15 @@ class Login extends Component {
             {errors.username}
             {errors.userNotFound}
           </span>
+          </div>
+          </div>
+
           <br />
           <br />
+
+          <div className="password">
+            <div className="sec-2">
+          <RiLockPasswordFill style={style}/>
           <label>Password: </label>
           <input
             id="password"
@@ -84,21 +100,19 @@ class Login extends Component {
             {errors.password}
             {errors.passwordIncorrect}
           </span>
+          </div>
+          </div>
           <br />
           <br />
-          <input type="submit" value="enter"></input>
+          <input type="submit" value="submit" className="login"></input>
         </form>
-        <Link to="/register" className="btn-flat waves-effect">
+        <Link to="/register">
           Don't have an account? Sign Up
         </Link>
-        <br/>
-        <Link to="/forgot" className="btn-flat waves-effect">
+        <Link to="/forgot">
           Forgot your password?
         </Link>
         <br/>
-        <Link to="/dashboard" className="btn-flat waves-effect">
-          Enter
-        </Link>
       </div>
     );
   }
