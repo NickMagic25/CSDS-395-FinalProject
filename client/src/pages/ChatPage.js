@@ -8,7 +8,7 @@ import {ContactsProvider} from '../contexts/chat/ContactsProvider';
 import { MessagesProvider } from '../contexts/chat/MessagesProvider';
 import {SocketProvider} from '../contexts/chat/SocketProvider'
 
-function Chat() {
+function ChatPage() {
   const [id, setId] = LocalStorage('id')
 
   const dashboard = (
@@ -23,9 +23,8 @@ function Chat() {
 
   return (
     id !== 'undefined' && id != null ? dashboard : 
-   <Login onIdSubmit={setId} />
-   
+    <Login onIdSubmit={setId} />
   )
 }
 
-export default Chat;
+export default ChatPage;
