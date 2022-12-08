@@ -1,5 +1,5 @@
 import React from 'react'
-import { useMessages } from '../contexts/MessagesProvider'
+import { useMessages } from '../../contexts/chat/MessagesProvider'
 import OpenMessage from './OpenMessage'
 import SideBar from './SideBar'
 

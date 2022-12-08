@@ -1,12 +1,12 @@
 import React from 'react'
 import Login from './Login'
-import LocalStorage from '../hooks/LocalStorage';
-import Dashboard from './Dashboard';
-import {ContactsProvider} from '../contexts/ContactsProvider';
+import LocalStorage from '../../hooks/LocalStorage';
+import Dashboard from './Dashboard'
+import {ContactsProvider} from '../../contexts/chat/ContactsProvider';
 //import SideBar from './components/SideBar';
 // import "bootstrap/dist/css/bootstrap.min.css";
-import { MessagesProvider } from '../contexts/MessagesProvider';
-import {SocketProvider} from '../contexts/SocketProvider'
+import { MessagesProvider } from '../../contexts/chat/MessagesProvider';
+import {SocketProvider} from '../../contexts/chat/SocketProvider'
 
 function App() {
   const [id, setId] = LocalStorage('id')

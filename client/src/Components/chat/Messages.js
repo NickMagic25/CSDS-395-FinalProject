@@ -1,6 +1,6 @@
 import React from 'react'
 import { ListGroup } from 'react-bootstrap'
-import { useMessages } from '../contexts/MessagesProvider'
+import { useMessages } from '../../contexts/chat/MessagesProvider'
 //import { useState} from 'react'
 
 export default function Messages() {
