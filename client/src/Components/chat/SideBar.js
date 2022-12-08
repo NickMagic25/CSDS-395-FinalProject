@@ -7,6 +7,7 @@ import NewContactModal from './NewContactModal'
 
 const messages_Key = 'messages'
 const contacts_Key = 'contacts'
+const username = localStorage.getItem('username')
 
 export default function SideBar({ id }) {
     const [activeKey, setActiveKey] = useState(messages_Key)
@@ -37,7 +38,7 @@ export default function SideBar({ id }) {
                     </Tab.Pane>
                 </Tab.Content>
                 <div className = "p-2 border-top border-right small">
-                    Personal ID: <span className = "text-muted">{id}</span>
+                    Personal ID: <span className = "text-muted">{username}</span>
                 </div>
                 <Button onClick = {() => setOpenModal(true)} className = "rounded-0">
                     New {messagesOpen ? 'Message' : 'Contact'}
