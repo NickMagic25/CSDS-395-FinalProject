@@ -1002,8 +1002,9 @@ app.post("/api/updateUser", (req,res)=>{
     const bench=req.body.bench;
     const deadlift= req.body.deadlift;
     const squat= req.body.squat;
+    const weight= req.body.weight;
 
     const sql="UPDATE user SET bench=" + db.escape(bench) + " deadlift=" + db.escape(deadlift) + " squat="
-        + db.escape(squat) + " WHERE user_name=" + db.escape(source);
+        + db.escape(squat) + " weight = "+ weight +"WHERE user_name=" + db.escape(source);
     return runSQL_NoResult(sql,res);
 })
