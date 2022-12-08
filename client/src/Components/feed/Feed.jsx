@@ -90,33 +90,36 @@ export default function Feed() {
     else {
         console.log('tes')
         alert('Workout added')
-        // anotherFunction(id, username)
+        anotherFunction(id, username)
     }
 
 }
 
-// function anotherFunction(id, username) {
-//         const eId = uuidv4();
-//         exercises.map(e => (
-//             fetch('http://localhost:5000/api/addSet', {
-//               method:'POST',
-//               headers: {
-//           'Content-Type': 'application/json',
-//                   'username': username,
+async function anotherFunction(id, username) {
+        let eId = uuidv4(); //fix so that it doesnt have duplicate eid
+        const promises = exercises.map(e => (
+            eId = uuidv4(),
+            fetch('http://localhost:5000/api/addSet', {
+              method:'POST',
+              headers: {
+          'Content-Type': 'application/json',
+                  'username': username,
                   
-//         },
-//               body: JSON.stringify({
-//                   workoutId: id,
-//                   moveName: e.move_name,
-//                   set: e.repetition,
-//                   rep: e.rep_count,
-//                   set_id: eId,
-//                   setNum: -1
-//               }),
-//           })
-//         )) 
-//   return;
-// }
+        },
+              body: JSON.stringify({
+                  workoutId: id,
+                  moveName: e.move_name,
+                  set: e.repetition,
+                  rep: e.rep_count,
+                  set_id: eId,
+                  setNum: -1
+              }),
+          })
+        ))
+        
+        const results = await Promise.all(promises)
+  return;
+}
 
     useEffect(() => {
       const username = localStorage.getItem('username')
