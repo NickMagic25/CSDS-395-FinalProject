@@ -927,7 +927,8 @@ app.post("/api/makePost", (req, res)=>{
 app.get("/api/getUser/:target",(req,res)=> {
     const target = req.params['target'];
 
-    const sql = "SELECT user_name, first_name, last_name, intro FROM user WHERE user_name="+ db.escape(target);
+    const sql = "SELECT user_name, first_name, last_name, intro, bench, deadlift, squat, weight FROM user " +
+        "WHERE user_name="+ db.escape(target);
     console.log(sql);
     db.query(sql, (err, result) =>{
         if (err) {
@@ -994,4 +995,15 @@ app.get("/api/allFriends",(req,res)=>{
             return res.json({status: 'ok', friends: result});
         }
     })
+})
+
+app.post("/api/updateUser", (req,res)=>{
+    const source=req.headers['username'];
+    const bench=req.body.bench;
+    const deadlift= req.body.deadlift;
+    const squat= req.body.squat;
+
+    const sql="UPDATE user SET bench=" + db.escape(bench) + " deadlift=" + db.escape(deadlift) + " squat="
+        + db.escape(squat) + " WHERE user_name=" + db.escape(source);
+    return runSQL_NoResult(sql,res);
 })
