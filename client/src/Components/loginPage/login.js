@@ -52,6 +52,7 @@ class Login extends Component {
     const { errors } = this.state;
     const style = { color: "black", fontSize: "1.5em", margin: "1em" }
     return (
+      <div className="loginBody">
       <div className="screen-1">
         <h1 style={{ color: "black" }} align="middle">
           Login form
@@ -113,6 +114,7 @@ class Login extends Component {
           Forgot your password?
         </Link>
         <br/>
+      </div>
       </div>
     );
   }
