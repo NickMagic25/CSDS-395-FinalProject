@@ -22,8 +22,10 @@ function App() {
   )
 
   return (
-    id !== 'undefined' && id != null ? dashboard : 
-   <Login onIdSubmit={setId} />
+    // id !== 'undefined' && id != null ? 
+    dashboard
+    //:
+   // <Login onIdSubmit={setId} />
    
   )
 }

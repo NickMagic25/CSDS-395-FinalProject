@@ -50,6 +50,7 @@ export default function Navbar({changeUserName}) {
             </div>
             <div className="navbarRight">
                 <Link to="/workout" className="navbarLink">My Workouts</Link>
+                <Link to="/chat" className="navbarLink">Chat</Link>
                 <Link to="/friends" className="navbarLink">Friends</Link>
             </div>
             <div className="navbarIcons">

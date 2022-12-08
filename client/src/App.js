@@ -14,7 +14,7 @@ import { Provider } from "react-redux";
 import store from "./store";
 import "bootstrap/dist/css/bootstrap.min.css";
 import UserProfile from "./pages/userProfile";
-import Chat from './Components/chat'
+import ChatPage from './pages/ChatPage'
 function App() {
   return (
     <Provider store={store}>
@@ -30,7 +30,7 @@ function App() {
         <Route path="/workout" exact component={Workout}></Route>
         <Route path="/userProfile" exact component={UserProfile}></Route>
         <Route path="/friends" exact component={FriendsPage}></Route>
-        <Route path="/chat" exact component={Chat}></Route>
+        <Route path="/chat" exact component={ChatPage}></Route>
       </div>
     </Router>
     </Provider>
