@@ -7,6 +7,8 @@ module.exports = function registerValidation(user) {
   user.username = !isEmpty(user.username) ? user.username : "";
   user.email = !isEmpty(user.email) ? user.email : "";
   user.password = !isEmpty(user.password) ? user.password : "";
+  user.firstName = !isEmpty(user.firstName) ? user.firstName : "";
+  user.lastname = !isEmpty(user.lastName) ? user.lastName : "";
 
   //checking for if the user inputted name
   if (validator.isEmpty(user.username)) {
@@ -23,6 +25,14 @@ module.exports = function registerValidation(user) {
   //check password
   if (validator.isEmpty(user.password)) {
     errors.password = "password required";
+  }
+
+  if (validator.isEmpty(user.firstName)) {
+    errors.firstName = "firstname required";
+  }
+
+  if (validator.isEmpty(user.lastName)) {
+    errors.lastName = "lastname required";
   }
 
   return {

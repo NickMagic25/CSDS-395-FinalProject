@@ -73,7 +73,7 @@ class Login extends Component {
               invalid: errors.username || errors.userNotFound,
             })}
           ></input>
-          <span className="red-text">
+          <span style={{color: "red"}} className="red-text">
             {errors.username}
             {errors.userNotFound}
           </span>
@@ -97,7 +97,7 @@ class Login extends Component {
               invalid: errors.password || errors.passwordIncorrect,
             })}
           ></input>
-          <span className="red-text">
+          <span style={{color: "red"}} className="red-text">
             {errors.password}
             {errors.passwordIncorrect}
           </span>
@@ -109,9 +109,6 @@ class Login extends Component {
         </form>
         <Link to="/register">
           Don't have an account? Sign Up
-        </Link>
-        <Link to="/forgot">
-          Forgot your password?
         </Link>
         <br/>
       </div>
