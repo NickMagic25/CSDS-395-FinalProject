@@ -4,6 +4,9 @@ const sendgrid = require('@sendgrid/mail');
 const cors = require("cors");
 const send = require("@sendgrid/mail");
 const CryptoJS = require("crypto-js");
+const dns = require('dns');
+
+dns.setDefaultResultOrder('ipv4first');
 function encrypt(text){
     return CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(text));
 }

@@ -755,24 +755,12 @@ app.post("/messages/:groupID" , (req,res) =>{
     const insertSQL= "INSERT INTO message(group_id, content, sender, send_time, id) SELECT " + db.escape(groupID) + ", "
         + db.escape(message) + ", " + db.escape(userName) + ", " + db.escape(now()) +", "+ db.escape(message_id) + " FROM"
         +" message_group_member WHERE user_name = " + db.escape(userName) + " AND group_ID="+ db.escape(groupID);
-    db.query(insertSQL, async (err, result) => {
+    db.query(insertSQL, (err, result) => {
         if (err) {
             console.log(err);
             return res.status(400).json({password: err.sqlMessage})
         } else {
             console.log(result);
-            const send = await fetch(mailAPIURL + '/api/message', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-
-                },
-                body: JSON.stringify({
-                    username:userName,
-                    groupID: groupID,
-                    message: message
-                }),
-            })
             return res.json({status: 'sent'});
         }
     })
@@ -831,7 +819,7 @@ app.get("/moves/done/:userName", (req,res) => {
 // source: user
 // target: other user
 // auto accepts if public account
-app.post("/api/addFriend", async (req,res)=>{
+app.post("/api/addFriend", (req,res)=>{
     console.log(req.body);
     const target= req.body.body.target;
     const source= req.body.headers['username'];
@@ -841,24 +829,13 @@ app.post("/api/addFriend", async (req,res)=>{
     const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT "+ db.escape(source)
     +", "+ db.escape(target) +","+ db.escape(now()) +", true as approved FROM user WHERE user_name="+ db.escape(target) +"";
 
-    db.query(sql, async (err,result)=>{
+    db.query(sql, (err,result)=>{
         if(err){
             console.log(err);
             return res.status(400).json({ password: err.sqlMessage });
         }
         else{
             console.log(result)
-            const send = await fetch(mailAPIURL + '/api/newFriend', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-
-                },
-                body: JSON.stringify({
-                    target: target,
-                    source: source
-                }),
-            })
             return res.json({status:'ok'})
         }
     })
