@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import { useHistory } from 'react-router-dom'
 import { decodeToken } from "react-jwt";
-import {Container, Button, Form, Card, Modal, CloseButton, Col, Row} from 'react-bootstrap'
+import {Container, Button, Form, Card, Modal, CloseButton, Col, Row, Table} from 'react-bootstrap'
 import { v4 as uuidv4 } from 'uuid';
 import Navbar from "../Components/navbar/Navbar";
 
@@ -331,15 +331,30 @@ export default function Workout() {
                 </Button>
 
                 
-
+                
                 <Modal show={showWork} onHide={handleCloseW}>
                     <Modal.Header closeButton>
                     <Modal.Title>{workName}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
+                    <Table striped bordered hover variant="dark">
+                    <thead>
+                        <tr>
+                        <th>Exercise Name</th>
+                        <th>Sets</th>
+                        <th>Reps</th>
+                        </tr>
+                    </thead>
+                    <tbody>    
                     {exercises.map(f => (
-                        <li>{f.move_name} {f.repetition} x {f.rep_count} reps</li>
+                        <tr>
+                            <td>{f.move_name}</td>
+                            <td>{f.repetition}</td>
+                            <td>{f.rep_count}</td>
+                        </tr>
                     ))}
+                    </tbody>
+                    </Table>
                         
                     </Modal.Body>
                     <Modal.Footer>

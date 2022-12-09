@@ -4,12 +4,15 @@ import {ProfileInfo} from "../Components/profileInfo/ProfileInfo";
 import Navbar from "../Components/navbar/Navbar";
 import axios from "axios";
 
-var staticSquat = 0, staticBench = 0, staticDeadlift = 0, staticWeight = 0;
-
 export default function UserProfile(props) {
     const history = useHistory()
     const token = localStorage.getItem('jwtToken')
     const location = useLocation();
+
+  const [staticSquat, setStaticSquat] = useState(0)
+  const [staticBench, setStaticBench] = useState(0)
+  const [staticDeadlift, setStaticDeadlift] = useState(0)
+  const [staticWeight, setStaticWeight] = useState(0)
 
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
@@ -45,7 +48,7 @@ export default function UserProfile(props) {
     if (userName != null){
         const req = await fetch('http://localhost:5000/api/getUser/' + userName, {
 			headers: {
-				'username': localStorage.getItem('username'),
+				'username': userName,
 			},
 		})
     const data = await req.json()
@@ -59,28 +62,28 @@ export default function UserProfile(props) {
         }
         else {
             setBench(data.profile[0].bench);
-            staticBench = data.profile[0].bench
+            setStaticBench(data.profile[0].bench)
         }
         if (data.profile[0].deadlift == null){
             setDeadlift(0);
         }
         else {
             setDeadlift(data.profile[0].deadlift);
-            staticDeadlift = data.profile[0].deadlift
+            setStaticDeadlift(data.profile[0].deadlift)
         }
         if (data.profile[0].squat == null){
             setSquat(0);
         }
         else {
             setSquat(data.profile[0].squat);
-            staticSquat = data.profile[0].squat;
+            setStaticSquat(data.profile[0].squat)
         }
         if (data.profile[0].weight == null){
             setWeight(0);
         }
         else {
             setWeight(data.profile[0].weight);
-            staticWeight = data.profile[0].weight;
+            setStaticWeight(data.profile[0].weight)
         }
     }
     }
@@ -169,6 +172,16 @@ export default function UserProfile(props) {
                 weight: parseInt(weight),
             }),
         })
+        const data = await response.json()
+
+        if (data.status === 'ok') {
+            setStaticBench(bench)
+            setStaticDeadlift(deadlift)
+            setStaticSquat(squat)
+            setStaticWeight(weight)
+		} else {
+			alert(data.error)
+		}
     }
 
   return (
@@ -188,14 +201,14 @@ export default function UserProfile(props) {
         <div className="lastName">{lastName}</div>
         <div className="userName">{userName}</div>
         <div className='oneRepMax'>
-            <div className="deadlift">
-                Max Deadlift: {staticDeadlift}
-            </div>
             <div className="bench">
-                Max Bench: {staticBench}
+                Max Bench: {staticBench} lbs
+            </div>
+            <div className="deadlift">
+                Max Deadlift: {staticDeadlift} lbs
             </div>
             <div className="squat">
-                Max Squat: {staticSquat}
+                Max Squat: {staticSquat} lbs
             </div>
         </div>
         <div className="weight">
