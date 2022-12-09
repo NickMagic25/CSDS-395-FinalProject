@@ -2,7 +2,7 @@ import "./feed.css";
 import Write from "../write/Write"
 import React, {useEffect, useState, useReducer} from 'react'
 import {Link} from 'react-router-dom'
-import {Navbar, Container, Button, Form, Card, Modal} from 'react-bootstrap'
+import {Navbar, Container, Button, Form, Card, Modal, Table} from 'react-bootstrap'
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -164,10 +164,25 @@ async function anotherFunction(id, username) {
                     <Modal.Title>{workoutName}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
+
+                    <Table striped bordered hover variant="dark">
+                    <thead>
+                        <tr>
+                        <th>Exercise Name</th>
+                        <th>Sets</th>
+                        <th>Reps</th>
+                        </tr>
+                    </thead>
+                    <tbody>    
                     {exercises.map(f => (
-                        <li>{f.move_name} {f.repetition} x {f.rep_count} reps</li>
+                        <tr>
+                        <td>{f.move_name}</td>
+                        <td>{f.repetition}</td>
+                        <td>{f.rep_count}</td>
+                        </tr>
                     ))}
-                        
+                    </tbody>
+                    </Table>
                     </Modal.Body>
                     <Modal.Footer>
                     <Button variant="secondary" onClick={addWorkout}>
