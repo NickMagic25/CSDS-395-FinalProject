@@ -75,7 +75,7 @@ class Register extends Component {
               invalid: errors.firstName,
             })}
           ></input>
-          <span className="red-text">{errors.firstName}</span>
+          <span style={{color: "red"}} className="red-text">{errors.firstName}</span>
           </div>
           </div>
           <br />
@@ -95,7 +95,7 @@ class Register extends Component {
               invalid: errors.lastName,
             })}
           ></input>
-          <span className="red-text">{errors.lastName}</span>
+          <span style={{color: "red"}} className="red-text">{errors.lastName}</span>
           </div>
           </div>
           <br />
@@ -115,7 +115,7 @@ class Register extends Component {
               invalid: errors.email,
             })}
           ></input>
-          <span className="red-text">{errors.email}</span>
+          <span style={{color: "red"}} className="red-text">{errors.email}</span>
           </div>
           </div>
           <br />
@@ -135,7 +135,7 @@ class Register extends Component {
               invalid: errors.username,
             })}
           ></input>
-          <span className="red-text">{errors.username}</span>
+          <span style={{color: "red"}} className="red-text">{errors.username}</span>
           </div>
           </div>
           <br />
@@ -155,7 +155,7 @@ class Register extends Component {
               invalid: errors.password,
             })}
           ></input>
-          <span className="red-text">{errors.password}</span>
+          <span style={{color: "red"}} className="red-text">{errors.password}</span>
           </div>
           </div>
           <br />
