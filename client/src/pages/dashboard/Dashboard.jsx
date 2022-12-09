@@ -31,7 +31,6 @@ export default function Dashboard() {
         <Navbar />
         <div className="dashboardContainer">
           <Feed />
-          <Pbbar />
         </div>
     </>
   );

@@ -49,10 +49,6 @@ const LandingNavbar = () => {
             <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" />
         </head>
         <nav style={styles.nav}>
-        <div style={styles.signup}>
-              <Link to="/about" style={styles.link}>About</Link>
-              <Link to="/contact" style={styles.link}>Contact</Link>
-        </div>
 
           <Link to="/" style={styles.link}>
             <span style={styles.logo}>Instajacked</span>

@@ -31,7 +31,7 @@ export default function Navbar({changeUserName}) {
     function logoff() {
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('username');
-        history.push('/login');
+        history.push('/');
     }
 
 

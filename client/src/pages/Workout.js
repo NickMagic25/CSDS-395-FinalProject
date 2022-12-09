@@ -284,9 +284,11 @@ export default function Workout() {
                 <Card.Text className="me-3">
                 {d.day} 
                  </Card.Text>
-                <Button onClick={() => showAddExercise(d.workout_id)}>
+                <Button variant='primary' onClick={() => showAddExercise(d.workout_id)}>
                     Add Exercise 
                 </Button>
+                <br/>
+                <br/>
                 <Modal show={showE} onHide={handleCloseE}>
                     <Modal.Header closeButton>
                     <Modal.Title>Add Exercise</Modal.Title>
@@ -326,7 +328,7 @@ export default function Workout() {
 
 
 
-                <Button onClick={() => showWorkouts(d.workout_id, d.name)}>
+                <Button variant='secondary' onClick={() => showWorkouts(d.workout_id, d.name)}>
                     View Workout
                 </Button>
 
@@ -358,7 +360,7 @@ export default function Workout() {
                         
                     </Modal.Body>
                     <Modal.Footer>
-                    <Button onClick={shareWorkouts}>
+                    <Button variant='success' onClick={shareWorkouts}>
                         Share Workout
                     </Button>
                     

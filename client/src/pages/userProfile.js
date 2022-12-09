@@ -3,6 +3,9 @@ import { useHistory, useLocation } from 'react-router-dom'
 import {ProfileInfo} from "../Components/profileInfo/ProfileInfo";
 import Navbar from "../Components/navbar/Navbar";
 import axios from "axios";
+import { Card, ListGroup, Button } from 'react-bootstrap';
+import './InfoPanel.css';
+
 
 export default function UserProfile(props) {
     const history = useHistory()
@@ -189,31 +192,24 @@ export default function UserProfile(props) {
     <div>
         <Navbar changeUserName={setUserName}/>
         <div className="userProfile">
-        {!onUser && !followed && 
-            <button onClick={follow}>Follow</button>
-        }
-        {!onUser && followed && 
-            <button onClick={unfollow}>Unfollow</button>
-        }
         
-        
-        <div className="firstName">{firstName}</div>
-        <div className="lastName">{lastName}</div>
-        <div className="userName">{userName}</div>
-        <div className='oneRepMax'>
-            <div className="bench">
-                Max Bench: {staticBench} lbs
-            </div>
-            <div className="deadlift">
-                Max Deadlift: {staticDeadlift} lbs
-            </div>
-            <div className="squat">
-                Max Squat: {staticSquat} lbs
-            </div>
-        </div>
-        <div className="weight">
-            Current Weight: {staticWeight} (in lbs)
-        </div>
+        <Card className="info-panel">
+            <Card.Header>{userName}'s Profile </Card.Header>
+            <ListGroup variant="flush">
+                <ListGroup.Item>First Name: {firstName}</ListGroup.Item>
+                <ListGroup.Item>Last Name: {lastName}</ListGroup.Item>
+                <ListGroup.Item>Max Bench: {staticBench}</ListGroup.Item>
+                <ListGroup.Item>Max Deadlift: {staticDeadlift}</ListGroup.Item>
+                <ListGroup.Item>Max Squat: {staticSquat}</ListGroup.Item>
+                <ListGroup.Item>Bodyweight: {staticWeight} (in lbs)</ListGroup.Item>
+                {!onUser && !followed && 
+                <ListGroup.Item><Button onClick={follow}>Follow</Button></ListGroup.Item>
+                }
+                {!onUser && followed && 
+                <ListGroup.Item><Button onClick={unfollow}>Unfollow</Button></ListGroup.Item>
+                }
+            </ListGroup>
+        </Card>
         <br />
         <br />
         {onUser && 

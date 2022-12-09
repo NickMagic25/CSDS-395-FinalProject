@@ -17,12 +17,8 @@ function HomePage(){
           <Col>
           <h1 className={styles.h1Format}>WHERE SHARING YOUR FITNESS JOURNEY BECOMES EASIER</h1>
           <h2 className = {styles.h2Format}>THE GO-TO ONLINE PLATFORM FOR TRACKING AND SHARING YOUR WORKOUT JOURNEY WITH FRIENDS!</h2>
-          <form>
-            <label>
-               <input type="text" name="name" placeholder="enter email" className={styles.emailBox}/>
-               </label>w0
-                <input type="submit" value="Sign up" className={styles.submitButton}/>
-                </form>
+      
+          
 
                 <img src = {Social} alt = "Social media graph" className={styles.img}></img>
                 

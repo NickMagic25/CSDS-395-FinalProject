@@ -1,0 +1,18 @@
+.info-panel {
+    max-width: 400px;
+    margin: 20px auto;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .info-panel .card-header {
+    background-color: #0097a7;
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+    padding: 10px 0;
+  }
+  
+  .info-panel .list-group-item {
+    font-size: 18px;
+  }
