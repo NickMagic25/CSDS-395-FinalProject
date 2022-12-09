@@ -36,6 +36,9 @@ export default function Navbar({changeUserName}) {
 
 
     function viewProfile() {
+      if(window.location.pathname === "/userProfile") {
+        changeUserName(localStorage.getItem('username'))
+    }
         history.push({pathname: '/userProfile', state: localStorage.getItem('username')});
     }
 
