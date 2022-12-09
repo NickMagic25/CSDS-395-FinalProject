@@ -68,8 +68,8 @@ function sqlHandler(sql, message, subject, res){
                 let email = decrypt(result[i]['email']);
                 sendMessage(email, subject, message);
             }
+            return res.json({ status:'ok'});
         }
-        return res.json({ status:'ok'});
     })
 }
 
@@ -83,8 +83,31 @@ app.post("/api/message", (req,res)=>{
     const subject="New message from "+ senderUserName + " in " + groupName;
 
     const sql = "SELECT email FROM user WHERE user_name in (SELECT user_name FROM message_group_member WHERE " +
-        "group_ID= '"+ groupID +"' and message_group_member.user_name!='"+ senderUserName +"')";
+        "group_ID= "+ db.escape(groupID) +" and message_group_member.user_name!="+ db.escape(senderUserName) +")";
     return sqlHandler(sql, decrypt(message),subject,res);
+})
+
+app.post("/api/newFriend", (req,res)=>{
+    console.log(req.body)
+    const source= req.body.source;
+    const target= req.body.target;
+
+    const subject= "New User Followed you " + source + "!"
+    const message= "Log onto Insta-Jacked to see your new Follower!"
+
+    const emailSQl="SELECT email FROM user WHERE user_name=" +db.escape(target);
+    db.query(emailSQl, (err, result)=>{
+        if(err){
+            console.log(err)
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            email=result[0]['email']
+            sendMessage(decrypt(email),subject, message);
+            return res.json({ status:'ok'});
+        }
+
+    })
 })
 
 app.post("/api/comment", (req,res)=>{
@@ -95,7 +118,7 @@ app.post("/api/comment", (req,res)=>{
     const subject="New comment from "+ user;
     const message=user + " said " + comment;
 
-    const sql="SELECT u.email FROM user u, user_post up WHERE u.user_name=up.user_name AND up.post_id='"+ postID +"'";
+    const sql="SELECT u.email FROM user u, user_post up WHERE u.user_name=up.user_name AND up.post_id="+ db.escape(postID);
     return sqlHandler(sql,decrypt(message),subject,res);
 })
 

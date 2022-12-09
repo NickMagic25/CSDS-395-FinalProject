@@ -765,7 +765,6 @@ app.post("/messages/:groupID" , (req,res) =>{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'username': userName,
 
                 },
                 body: JSON.stringify({
@@ -832,7 +831,7 @@ app.get("/moves/done/:userName", (req,res) => {
 // source: user
 // target: other user
 // auto accepts if public account
-app.post("/api/addFriend", (req,res)=>{
+app.post("/api/addFriend", async (req,res)=>{
     console.log(req.body);
     const target= req.body.body.target;
     const source= req.body.headers['username'];
@@ -840,9 +839,29 @@ app.post("/api/addFriend", (req,res)=>{
     console.log("Self",source);
     console.log("target",target);
     const sql = "INSERT INTO user_follow (source_user, target_user, follow_time, approved) SELECT "+ db.escape(source)
-    +", "+ db.escape(target) +","+ db.escape(now()) +", not user.private_account as approved FROM user WHERE user_name="+ db.escape(target) +"";
+    +", "+ db.escape(target) +","+ db.escape(now()) +", true as approved FROM user WHERE user_name="+ db.escape(target) +"";
 
-    return runSQL_NoResult(sql,res);
+    db.query(sql, async (err,result)=>{
+        if(err){
+            console.log(err);
+            return res.status(400).json({ password: err.sqlMessage });
+        }
+        else{
+            console.log(result)
+            const send = await fetch(mailAPIURL + '/api/newFriend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+
+                },
+                body: JSON.stringify({
+                    target: target,
+                    source: source
+                }),
+            })
+            return res.json({status:'ok'})
+        }
+    })
 })
 
 // accepts friend requests sent to you
@@ -890,9 +909,9 @@ app.delete("/api/deleteWorkout", (req,res)=>{
     const username=req.headers['username'];
     const workout_id=req.body.workoutID;
 
-    const sql="DELETE FROM `set` WHERE workout_id="+ db.escape(workout_id) 
-    +"; DELETE FROM user_post WHERE workout_id="+ db.escape(workout_id)
-    +"; DELETE FROM workout WHERE workout_id="+ db.escape(workout_id);
+    const sql="DELETE FROM `set` WHERE workout_id="+ db.escape(workout_id)
+        +"; DELETE FROM user_post WHERE workout_id="+ db.escape(workout_id)
+        +"; DELETE FROM workout WHERE workout_id="+ db.escape(workout_id);
 
     return runSQL_NoResult(sql,res);
 })
